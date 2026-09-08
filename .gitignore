@@ -1,29 +1,41 @@
-# Python environment and cache
+# Python
+venv/
 myenv/
+geo_env/
+backend/.venv/
 __pycache__/
 *.py[cod]
 *$py.class
+.Python
+*.egg-info/
+.pytest_cache/
 
-# Model checkpoints and weights
-checkpoints/
+# Secrets
+.env
+frontend/.env
+
+# Artifacts: keep folder structure, ignore heavy files
+artifacts/models/*
+!artifacts/models/.gitkeep
+artifacts/outputs/*
+!artifacts/outputs/.gitkeep
 *.pt
 *.pth
-
-# Datasets and Outputs
-GeoSight_Consolidated_Dataset/
-GeoSight_Final_Prediction/
-visualizations/
-
-# Large file extensions
 *.tif
+*.tiff
 
-# OS generated files
+# Node
+node_modules/
+frontend/dist/
+dist/
+*.local
+
+# OS / IDE
 .DS_Store
 Thumbs.db
-
-# IDE configurations
 .vscode/
+.cursor/
+.idea/
 
-geo_env/
-venv/
-node_modules/
+# Logs
+*.log

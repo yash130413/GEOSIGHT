@@ -1,0 +1,9 @@
+[project]
+name = "geosight-backend"
+version = "1.0.0"
+description = "GeoSight Flask API for satellite land classification and road detection"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

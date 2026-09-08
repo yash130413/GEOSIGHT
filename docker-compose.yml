@@ -1,0 +1,22 @@
+# Optional local orchestration (requires Docker images you define later)
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      - ./artifacts:/app/artifacts
+    profiles: ["full"]
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: http://localhost:5000
+    profiles: ["full"]
+
+# Default: documentation-only placeholder.
+# Local development is recommended via scripts/start_dev.ps1
