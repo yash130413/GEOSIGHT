@@ -88,7 +88,7 @@ Added 4-panel visualization feature to GeoSight that displays:
 - Frontend: No new dependencies (uses existing framer-motion)
 
 ## Testing
-Run `python analyze_4panel.py` to verify 4-panel structure from existing visualizations.
+Run `python tools/analysis/analyze_4panel.py` to verify 4-panel structure from existing visualizations.
 
 ## Notes
 - 4-panel generation is automatic when prediction succeeds

@@ -46,7 +46,7 @@ Google Earth Engine now requires a Cloud Project for all users. This is a one-ti
 
 1. Create project: https://console.cloud.google.com/projectcreate
 2. Register with EE: https://code.earthengine.google.com/register
-3. Run: `python test_with_project.py`
+3. Run: `python tests/test_with_project.py`
 
 **See EE_SETUP_GUIDE.md for detailed instructions**
 
@@ -54,13 +54,13 @@ Google Earth Engine now requires a Cloud Project for all users. This is a one-ti
 
 ### Option 1: Interactive Mode
 ```bash
-python fetch_image.py
+python tools/earth_engine/fetch_image.py
 ```
 Enter coordinates when prompted.
 
 ### Option 2: Python Script
 ```python
-from sentinel_fetcher import SentinelFetcher
+from tools.earth_engine.sentinel_fetcher import SentinelFetcher
 
 fetcher = SentinelFetcher(project='your-project-id')
 image_path = fetcher.fetch_image(lat=28.6139, lon=77.2090)
@@ -69,7 +69,7 @@ fetcher.visualize_image(image_path)
 
 ### Option 3: Test Script
 ```bash
-python test_with_project.py
+python tests/test_with_project.py
 ```
 
 ## 📊 What You Get
@@ -151,7 +151,7 @@ pip install -r requirements_fetcher.txt
 ### Immediate (2 minutes):
 1. Create Google Cloud Project
 2. Register with Earth Engine
-3. Run `python test_with_project.py`
+3. Run `python tests/test_with_project.py`
 
 ### After Setup:
 1. Fetch satellite images with coordinates

@@ -22,7 +22,7 @@ try:
     print("\n" + "=" * 60)
     print("SUCCESS - You're ready to fetch satellite images!")
     print("=" * 60)
-    print("\nNext step: Run 'python fetch_image.py'")
+    print("\nNext step: Run 'python tools/earth_engine/fetch_image.py'")
     
 except Exception as e:
     print(f"\n[FAIL] Authentication failed: {e}")

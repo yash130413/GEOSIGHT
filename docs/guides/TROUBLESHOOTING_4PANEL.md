@@ -87,7 +87,7 @@ pip install scipy
 
 Run the test script:
 ```bash
-python test_4panel.py
+python tests/test_4panel.py
 ```
 
 This will:

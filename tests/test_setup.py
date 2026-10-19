@@ -109,7 +109,7 @@ def main():
             print("[OK] Earth Engine authenticated")
             print("\n[SUCCESS] SYSTEM READY!")
             print("\nYou can now run:")
-            print("   python fetch_image.py")
+            print("   python tools/earth_engine/fetch_image.py")
         else:
             print("[WARN] Earth Engine needs authentication")
             print("\n[INFO] Next step:")

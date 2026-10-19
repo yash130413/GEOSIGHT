@@ -34,7 +34,7 @@ This is a one-time setup that takes 2-3 minutes.
 
 5. **Use your project ID:**
    ```python
-   from sentinel_fetcher import SentinelFetcher
+   from tools.earth_engine.sentinel_fetcher import SentinelFetcher
    
    # Use your project ID (found in Cloud Console)
    fetcher = SentinelFetcher(project='geosight-satellite')
@@ -55,7 +55,7 @@ If you already have a Google Cloud Project:
 ## Quick Test After Setup
 
 ```bash
-python test_with_project.py
+python tests/test_with_project.py
 ```
 
 ## Cost
@@ -89,6 +89,6 @@ If you don't want to set up Earth Engine right now, you can:
 ## Next Steps
 
 Once setup is complete:
-1. Run: `python test_with_project.py`
-2. If successful, use: `python fetch_image.py`
+1. Run: `python tests/test_with_project.py`
+2. If successful, use: `python tools/earth_engine/fetch_image.py`
 3. Start fetching satellite images!

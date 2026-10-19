@@ -4,7 +4,7 @@ GeoSight is a comprehensive machine learning pipeline that automatically perform
 
 ## Features
 
-- **Deep Learning Architecture:** Utilizes a state-of-the-art `U-Net++` segmentation model powered by an `EfficientNet-B4` backbone.
+- **Deep Learning Architecture:** Uses a `LinkNet` segmentation model powered by a `ResNet50` backbone.
 - **Data Augmentation:** Features aggressive data augmentation during training using `Albumentations` to build robust geospatial predictions.
 - **Geospatial Processing:** Handles multi-band (6-channel) satellite imagery leveraging the `rasterio` library dynamically.
 - **Mixed Precision Training:** Uses `torch.amp` (bfloat16) to fit large geographic batches into RTX hardware at scale.
@@ -12,14 +12,55 @@ GeoSight is a comprehensive machine learning pipeline that automatically perform
 ## Project Structure
 
 ```text
-GeoSight2/
-├── checkpoints/          # Where model weights (.pt files) are saved.
-├── data_scripts/         # Mask generation, geographical consolidation, and labeling scripts.
-├── visualizations/       # Prediction outputs mapped to RGB for qualitative analysis.
-├── train.py              # Main U-Net++ model training loop & validation.
-├── visualization.py      # Performs bulk batch geographical inference on full TIF datasets.
-└── requirements.txt      # Python dependencies.
+GEO/
+├── backend/              # Flask API, inference, and visualization services
+│   ├── app.py            # Runtime entry point
+│   ├── predict.py        # Land-cover model loading and inference
+│   ├── predict_roads.py  # Road model loading and inference
+│   └── requirements.txt  # Backend runtime dependencies
+├── Training/
+│   └── train.py          # Primary 6-band LinkNet/ResNet50 training pipeline
+├── data_scripts/         # Mask generation, labeling, and dataset preparation
+├── Scripts/
+│   ├── Data_Processing/  # Dataset and tile processing
+│   ├── Testing/          # Model and road evaluation scripts
+│   └── Visualization/   # Offline visualization tools
+├── tools/
+│   ├── analysis/         # Standalone image and tile analysis utilities
+│   ├── earth_engine/     # Earth Engine authentication and fetch utilities
+│   └── modeling/         # Standalone model inspection and mask utilities
+├── tests/                # Local smoke tests and manual test pages
+├── docs/
+│   ├── guides/           # Setup, feature, and troubleshooting guides
+│   ├── Claude.md         # Development notes
+│   └── Logbook.md        # Project log
+├── Geosight_frontend/
+│   └── geosight/         # Frontend application
+├── checkpoints/          # Trained model weights (ignored by Git)
+├── backend_outputs/      # Runtime API outputs (ignored/generated)
+├── outputs/              # Offline processing outputs
+├── visualizations/       # Generated visualization outputs
+└── requirements.txt      # Shared Python dependencies
 ```
+
+Root-level files are limited to project manifests, launch scripts, sample
+imagery, and this README. Generated results and local Python environments are
+kept outside the source tree organization and are not part of the runtime
+architecture.
+
+### Model architecture
+
+The production land-cover model is trained by `Training/train.py` and loaded by
+`backend/predict.py`. It is a 6-band LinkNet model with a ResNet50 encoder and
+four output classes: Background, Rural, Urban, and Water. The backend currently
+loads `checkpoints/geosight_final_epoch_11.pt`.
+
+Road extraction is a separate model and is intentionally kept independent from
+land-cover classification. Its runtime implementation is in
+`backend/predict_roads.py`, with weights stored under `Models/`.
+
+The former 8-band experimental trainer was removed because the runtime backend
+uses the 6-band model and the 8-band script was not part of the active pipeline.
 
 ## Setup & Installation
 
@@ -40,18 +81,29 @@ Assuming you have Python and a capable CUDA GPU installed:
 ## Usage
 
 ### 1. Training The Model
-Update the `IMG_DIR` and `MASK_DIR` paths in `train.py` to match where your `TIF` satellite and labeled masks are isolated.
+Update the `IMG_DIR` and `MASK_DIR` paths in `Training/train.py` to match where your `TIF` satellite and labeled masks are isolated.
 ```bash
-python train.py
+python Training/train.py
 ```
 This script will output `.pt` files containing model checkpoints inside the `checkpoints/` directory every epoch.
 
 ### 2. Full Inference / Visualization
-Evaluate your completed model across the dataset. Modify `IMG_DIR` and `MODEL_PATH` in `visualization.py`.
+Evaluate your completed model across the dataset by using the relevant script in `Scripts/Visualization/`.
 ```bash
-python visualization.py
+python Scripts/Visualization/visualization.py
 ```
 Predictions will be written to discrete `.tif` single-channel rasters.
+
+### 3. Start the application
+
+From the repository root:
+
+```bat
+start_system.bat
+```
+
+The script starts the Flask API from `backend/` and the Vite frontend from
+`Geosight_frontend/geosight/`.
 
 ## Evaluation Metrics
 

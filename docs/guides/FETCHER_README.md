@@ -21,7 +21,7 @@ This will open a browser for you to authorize access.
 
 ### Option 1: Interactive Script
 ```bash
-python fetch_image.py
+python tools/earth_engine/fetch_image.py
 ```
 
 Then enter:
@@ -31,7 +31,7 @@ Then enter:
 
 ### Option 2: Python Code
 ```python
-from sentinel_fetcher import SentinelFetcher
+from tools.earth_engine.sentinel_fetcher import SentinelFetcher
 
 # Initialize
 fetcher = SentinelFetcher(output_dir="fetched_images")

@@ -2,7 +2,7 @@
 Test script to verify the complete fetcher system
 Fetches a small test image from Delhi
 """
-from sentinel_fetcher import SentinelFetcher
+from tools.earth_engine.sentinel_fetcher import SentinelFetcher
 
 print("=" * 60)
 print("TESTING SENTINEL-2 FETCHER")
@@ -37,7 +37,7 @@ try:
         print(f"\n[*] Test image saved: {image_path}")
         print("\n[OK] System is working correctly!")
         print("\nYou can now:")
-        print("1. Run 'python fetch_image.py' for interactive mode")
+        print("1. Run 'python tools/earth_engine/fetch_image.py' for interactive mode")
         print("2. Use sentinel_fetcher.py in your own scripts")
         
         # Quick visualization test

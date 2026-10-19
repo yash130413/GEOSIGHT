@@ -13,6 +13,11 @@ checkpoints/
 GeoSight_Consolidated_Dataset/
 GeoSight_Final_Prediction/
 visualizations/
+backend_outputs/
+outputs/
+fetched_images/
+user_outputs/
+all_epochs_analysis/
 
 # Large file extensions
 *.tif

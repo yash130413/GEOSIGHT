@@ -21,7 +21,7 @@ This will:
 
 Run the interactive fetcher:
 ```bash
-python fetch_image.py
+python tools/earth_engine/fetch_image.py
 ```
 
 Then provide:

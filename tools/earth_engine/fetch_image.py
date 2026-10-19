@@ -2,7 +2,7 @@
 Simple script to fetch Sentinel-2 images by coordinates
 Just run this and provide your coordinates!
 """
-from sentinel_fetcher import SentinelFetcher
+from tools.earth_engine.sentinel_fetcher import SentinelFetcher
 
 def main():
     print("=" * 60)

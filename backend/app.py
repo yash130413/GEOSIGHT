@@ -17,7 +17,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Initialize Earth Engine
-PROJECT_ID = "geosight-95054"
+PROJECT_ID = "gen-lang-client-0871361958"
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "backend_outputs")
 OUTPUT_DIR = os.path.abspath(OUTPUT_DIR)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -59,14 +59,15 @@ if os.path.exists(ROAD_MODEL_PATH):
 else:
     print(f"[ERROR] Road model file not found at: {ROAD_MODEL_PATH}")
 
+EE_INITIALIZED = False
 try:
     ee.Initialize(project=PROJECT_ID)
     print("[OK] Earth Engine initialized")
-except:
-    print("[INFO] Authenticating Earth Engine...")
-    ee.Authenticate()
-    ee.Initialize(project=PROJECT_ID)
-    print("[OK] Authenticated")
+    EE_INITIALIZED = True
+except Exception as e:
+    print(f"[WARNING] Earth Engine initialization failed: {str(e)}")
+    print("[INFO] Backend will start but image fetching will be disabled until EE is configured")
+    print("[INFO] To fix: Register your project at https://console.cloud.google.com/earth-engine/configuration")
 
 
 @app.route('/api/health', methods=['GET'])
@@ -75,7 +76,7 @@ def health_check():
     return jsonify({
         'status': 'ok',
         'message': 'GeoSight backend is running',
-        'earth_engine': 'connected'
+        'earth_engine': 'connected' if EE_INITIALIZED else 'not configured'
     })
 
 
@@ -97,6 +98,12 @@ def fetch_image():
         "endDate": "2024-12-31"
     }
     """
+    if not EE_INITIALIZED:
+        return jsonify({
+            'error': 'Earth Engine not configured',
+            'message': 'Please configure Earth Engine. See https://console.cloud.google.com/earth-engine/configuration'
+        }), 503
+    
     try:
         data = request.json
         

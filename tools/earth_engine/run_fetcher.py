@@ -2,7 +2,7 @@
 Interactive Sentinel-2 Image Fetcher
 Asks for coordinates and fetches 10m resolution images
 """
-from sentinel_fetcher import SentinelFetcher
+from tools.earth_engine.sentinel_fetcher import SentinelFetcher
 
 # Your project ID
 PROJECT_ID = "geosight-489017"

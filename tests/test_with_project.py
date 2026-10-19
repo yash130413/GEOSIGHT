@@ -1,14 +1,14 @@
 """
 Test Sentinel-2 Fetcher with Cloud Project
 """
-from sentinel_fetcher import SentinelFetcher
+from tools.earth_engine.sentinel_fetcher import SentinelFetcher
 
 print("=" * 60)
 print("SENTINEL-2 FETCHER TEST")
 print("=" * 60)
 
 print("\n[INFO] Earth Engine requires a Google Cloud Project")
-print("[INFO] See EE_SETUP_GUIDE.md for setup instructions")
+print("[INFO] See docs/guides/EE_SETUP_GUIDE.md for setup instructions")
 print("\nIf you haven't set up a project yet:")
 print("1. Visit: https://console.cloud.google.com/projectcreate")
 print("2. Create a project (takes 2 minutes)")
@@ -22,7 +22,7 @@ project_id = input("\nEnter your Google Cloud Project ID: ").strip()
 
 if not project_id:
     print("\n[FAIL] No project ID provided")
-    print("Please create a project first (see EE_SETUP_GUIDE.md)")
+    print("Please create a project first (see docs/guides/EE_SETUP_GUIDE.md)")
     exit(1)
 
 print(f"\n[*] Using project: {project_id}")
@@ -56,7 +56,7 @@ try:
         
         print("\n[OK] System is working!")
         print("\nYou can now use:")
-        print(f"  python fetch_image.py")
+        print(f"  python tools/earth_engine/fetch_image.py")
         print("\nOr in your code:")
         print(f"  fetcher = SentinelFetcher(project='{project_id}')")
         
@@ -70,4 +70,4 @@ except Exception as e:
     print("1. Make sure project ID is correct")
     print("2. Enable Earth Engine API in your project")
     print("3. Register project at: https://code.earthengine.google.com/register")
-    print("4. See EE_SETUP_GUIDE.md for detailed instructions")
+    print("4. See docs/guides/EE_SETUP_GUIDE.md for detailed instructions")
