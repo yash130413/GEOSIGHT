@@ -7,9 +7,13 @@ from torch.utils.data import DataLoader, Dataset
 import segmentation_models_pytorch as smp
 
 # --- CONFIG ---
-IMG_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\GeoSight_Consolidated_Dataset\Images"
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+IMG_DIR = os.path.join(DATA_ROOT, "GeoSight_Consolidated_Dataset", "Images")
 MODEL_PATH = r"checkpoints\final_weight_epoch.pt"
-OUTPUT_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\GeoSight_Final_Prediction"
+OUTPUT_DIR = os.path.join(DATA_ROOT, "GeoSight_Final_Prediction")
 BATCH_SIZE = 128  # High batch size for A6000 inference
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 

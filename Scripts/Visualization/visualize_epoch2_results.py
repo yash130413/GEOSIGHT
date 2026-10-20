@@ -6,9 +6,13 @@ from matplotlib.colors import ListedColormap
 import random
 
 # --- CONFIG ---
-TEST_IMG_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Indore_tiles"
-PRED_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Indore_predictions_epoch2"
-OUTPUT_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\visual_inspection_epoch2"
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+TEST_IMG_DIR = os.path.join(DATA_ROOT, "Indore_tiles")
+PRED_DIR = os.path.join(DATA_ROOT, "Indore_predictions_epoch2")
+OUTPUT_DIR = os.path.join(DATA_ROOT, "visual_inspection_epoch2")
 NUM_SAMPLES = 20  # Number of random samples to visualize
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)

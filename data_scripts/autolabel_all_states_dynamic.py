@@ -8,11 +8,15 @@ from concurrent.futures import ProcessPoolExecutor
 import csv
 
 # --- Configuration ---
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 STATES = [
-    ('Kanpur', r'E:\labeled tiles\Kanpur_tiles_8band_overlap_50 (1)\Kanpur_tiles_8band_overlap_50')
+    ('Kanpur', os.path.join(DATA_ROOT, "labeled tiles", "Kanpur_tiles_8band_overlap_50 (1)", "Kanpur_tiles_8band_overlap_50"))
 ]
 
-BASE_OUT_DIR = r'C:\Users\Mohvijay-sch\Desktop\GeoSight2'
+BASE_OUT_DIR = DATA_ROOT
 os.makedirs(BASE_OUT_DIR, exist_ok=True)
 
 def profile_state(state_name, input_folder, n=200):

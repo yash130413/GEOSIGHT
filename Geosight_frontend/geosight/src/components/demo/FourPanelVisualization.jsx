@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import './FourPanelVisualization.css';
 
+import Icon, { IconText } from '../common/Icon';
 function FourPanelVisualization({ imageUrl, onClose, mode = 'classification' }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -31,10 +32,10 @@ function FourPanelVisualization({ imageUrl, onClose, mode = 'classification' }) 
         <div className="four-panel-content">
           {imageError && (
             <div className="error-message">
-              <p>❌ Failed to load image</p>
+              <p><Icon emoji="❌" /> Failed to load image</p>
               <p className="error-url">URL: {imageUrl}</p>
               <a href={imageUrl} target="_blank" rel="noopener noreferrer" className="open-direct-link">
-                🔗 Open Image in New Tab
+                <Icon emoji="🔗" /> Open Image in New Tab
               </a>
             </div>
           )}
@@ -82,7 +83,7 @@ function FourPanelVisualization({ imageUrl, onClose, mode = 'classification' }) 
         
         <div className="four-panel-legend">
           <div className="legend-note">
-            <span className="legend-icon">{mode === 'roads' ? '🛣️' : 'ℹ️'}</span>
+            <span className="legend-icon"><IconText text={mode === 'roads' ? '🛣️' : 'ℹ️'} /></span>
             <span>{mode === 'roads' ? 'Red overlay highlights detected road pixels' : 'Labels are overlaid on each panel for easy identification'}</span>
           </div>
         </div>

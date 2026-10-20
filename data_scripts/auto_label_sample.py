@@ -3,9 +3,14 @@ import rasterio
 import matplotlib.pyplot as plt
 
 # The input image path
-img_path = r'E:\labeled tiles\UK_tiles_labeled\tile_316.tif'
-out_path = r'C:\Users\Mohvijay-sch\Desktop\GeoSight2\sample_mask.tif'
-out_png  = r'C:\Users\Mohvijay-sch\Desktop\GeoSight2\sample_mask.png'
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+img_path = os.path.join(DATA_ROOT, "labeled tiles", "UK_tiles_labeled", "tile_316.tif")
+import os
+out_path = os.path.join(DATA_ROOT, "sample_mask.tif")
+out_png  = os.path.join(DATA_ROOT, "sample_mask.png")
 
 print(f"Processing: {img_path}")
 

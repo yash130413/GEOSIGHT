@@ -1,27 +1,23 @@
+import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
-import WavyBackground from './components/ui/WavyBackground';
 import './App.css';
 
 function App() {
-  const location = useLocation();
-  const isHome = location.pathname === '/';
+  const { pathname } = useLocation();
+
+  // Start every page at the top (links in the footer otherwise looked broken:
+  // the new page opened but stayed scrolled to the bottom)
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [pathname]);
 
   return (
     <div className="app">
       <Navbar />
       <main>
-        <AnimatePresence mode="wait">
-          {isHome ? (
-            <WavyBackground key={location.pathname}>
-              <Outlet key={location.pathname} />
-            </WavyBackground>
-          ) : (
-            <Outlet key={location.pathname} />
-          )}
-        </AnimatePresence>
+        <Outlet />
       </main>
       <Footer />
     </div>

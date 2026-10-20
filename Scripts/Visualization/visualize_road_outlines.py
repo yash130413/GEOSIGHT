@@ -11,9 +11,13 @@ from matplotlib import pyplot as plt
 
 # Configuration
 MODEL_PATH = 'GeoSight_RoadExpert_Final_PyTorch.pt'
-IMG_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\GeoSight_Consolidated_Dataset\Images"
-MASK_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Road_Masks_Generated"
-OUTPUT_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Road_Predictions_Enhanced"
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+IMG_DIR = os.path.join(DATA_ROOT, "GeoSight_Consolidated_Dataset", "Images")
+MASK_DIR = os.path.join(DATA_ROOT, "Road_Masks_Generated")
+OUTPUT_DIR = os.path.join(DATA_ROOT, "Road_Predictions_Enhanced")
 NUM_SAMPLES = 10
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)

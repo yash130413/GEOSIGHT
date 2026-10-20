@@ -12,8 +12,12 @@ from matplotlib import pyplot as plt
 
 # Configuration
 MODEL_PATH = 'GeoSight_RoadExpert_Final_PyTorch.pt'
-DEHRADUN_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Dehradun_tiles"
-OUTPUT_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Dehradun_Road_Results"
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+DEHRADUN_DIR = os.path.join(DATA_ROOT, "Dehradun_tiles")
+OUTPUT_DIR = os.path.join(DATA_ROOT, "Dehradun_Road_Results")
 NUM_SAMPLES = 10
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)

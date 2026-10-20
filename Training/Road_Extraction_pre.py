@@ -7,8 +7,12 @@ from terratorch.registry import FULL_MODEL_REGISTRY
 from scipy import ndimage
 
 # --- 1. DIRECTORIES ---
-IMG_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\GeoSight_Consolidated_Dataset\Images"
-FINAL_PPT_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\ULTIMATE_FINAL_RESULTS"
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+IMG_DIR = os.path.join(DATA_ROOT, "GeoSight_Consolidated_Dataset", "Images")
+FINAL_PPT_DIR = os.path.join(DATA_ROOT, "ULTIMATE_FINAL_RESULTS")
 os.makedirs(FINAL_PPT_DIR, exist_ok=True)
 
 ALL_FILES = [f for f in os.listdir(IMG_DIR) if f.endswith('.tif')]

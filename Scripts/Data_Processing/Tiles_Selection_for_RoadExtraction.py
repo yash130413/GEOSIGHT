@@ -4,7 +4,11 @@ import numpy as np
 from tqdm import tqdm
 import pandas as pd
 
-PRED_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\GeoSight_Final_Predictions"
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+PRED_DIR = os.path.join(DATA_ROOT, "GeoSight_Final_Predictions")
 
 def hunt_delhi_haryana_gems():
     files = [f for f in os.listdir(PRED_DIR) if f.endswith('.tif')]

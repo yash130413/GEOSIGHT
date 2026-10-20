@@ -27,7 +27,7 @@ echo.
 echo Backend: http://localhost:5000
 echo Frontend: http://localhost:5173
 echo.
-echo Navigate to: http://localhost:5173/map-selector
+echo Navigate to: http://localhost:5173/demo
 echo ============================================================
 echo.
 echo Press any key to stop all servers...

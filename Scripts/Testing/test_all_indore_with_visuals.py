@@ -15,8 +15,12 @@ from skimage.morphology import remove_small_objects
 warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 os.environ['GDAL_NUM_THREADS'] = '1'
 
-TEST_IMG_DIR = r"G:\GeoSight2\Evaluation_Results\Indore\Indore_tiles"
-CHECKPOINT_DIR = r"G:\GeoSight2\checkpoints"
+# Folder holding the datasets and outputs (formerly a machine-specific drive path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+TEST_IMG_DIR = os.path.join(DATA_ROOT, "Evaluation_Results", "Indore", "Indore_tiles")
+CHECKPOINT_DIR = os.path.join(DATA_ROOT, "checkpoints")
 BATCH_SIZE = 1
 NUM_SAMPLES = 10
 
@@ -123,7 +127,7 @@ def test_model(model, dataloader, collect_data=False):
     return class_counts, all_data
 
 def visualize_samples(all_data, best_epoch):
-    visual_dir = rf"G:\GeoSight2\Evaluation_Results\Indore\Indore_visual_inspection_epoch{best_epoch}_filtered"
+    visual_dir = os.path.join(DATA_ROOT, "Evaluation_Results", "Indore", f"Indore_visual_inspection_epoch{best_epoch}_filtered")
     os.makedirs(visual_dir, exist_ok=True)
     
     num_samples = min(NUM_SAMPLES, len(all_data))

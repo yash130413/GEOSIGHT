@@ -1,25 +1,44 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Card from '../common/Card';
+import EvaluationPending from './EvaluationPending';
+import evaluation from '../../data/modelEvaluation.json';
 import './ClassPerformance.css';
 
+import Icon from '../common/Icon';
 function ClassPerformance({ model = 'classification' }) {
   const [selectedClass, setSelectedClass] = useState(null);
-  const [sortBy, setSortBy] = useState('accuracy');
+  const [sortBy, setSortBy] = useState('iou');
 
-  const classificationData = [
-    { name: 'Water',      accuracy: 94.0, precision: 93.5, recall: 94.2, f1Score: 93.8, samples: 12800, color: '#3b82f6',       icon: '💧', bestFeature: 'NIR/SWIR Ratio' },
-    { name: 'Urban',      accuracy: 87.0, precision: 85.8, recall: 86.5, f1Score: 86.1, samples: 28400, color: 'var(--urban)',   icon: '🏙️', bestFeature: 'NDBI + Building Density' },
-    { name: 'Rural',      accuracy: 84.5, precision: 83.2, recall: 85.1, f1Score: 84.1, samples: 22600, color: 'var(--rural)',   icon: '🌾', bestFeature: 'NDVI Vegetation' },
-    { name: 'Background', accuracy: 78.0, precision: 76.4, recall: 77.8, f1Score: 77.1, samples: 6200,  color: '#6b7280',       icon: '🗺️', bestFeature: 'Low Reflectance' },
-  ];
+  // Measured values from Training/evaluate_models.py (src/data/modelEvaluation.json)
+  const result = evaluation[model === 'roads' ? 'roads' : 'classification'];
+  const style = {
+    Background: { color: '#6b7280', icon: '🗺️' },
+    Rural: { color: 'var(--rural)', icon: '🌾' },
+    Urban: { color: 'var(--urban)', icon: '🏙️' },
+    Water: { color: '#3b82f6', icon: '💧' },
+    'Non-Road': { color: '#6b7280', icon: '🌿' },
+    Road: { color: '#f59e0b', icon: '🛣️' },
+  };
 
-  const roadData = [
-    { name: 'Non-Road', accuracy: 91.0, precision: 92.1, recall: 91.0, f1Score: 91.5, samples: 48200, color: '#6b7280',     icon: '🌿', bestFeature: 'Low NDBI + Vegetation' },
-    { name: 'Road',     accuracy: 78.0, precision: 74.5, recall: 78.0, f1Score: 76.2, samples: 11800, color: '#f59e0b',     icon: '🛣️', bestFeature: 'Linear texture + RGB contrast' },
-  ];
+  if (!result) {
+    return (
+      <Card className="class-performance">
+        <h3>Class-wise Performance</h3>
+        <EvaluationPending model={model} />
+      </Card>
+    );
+  }
 
-  const classesData = model === 'roads' ? roadData : classificationData;
+  const classesData = result.classes.map((name) => ({
+    name,
+    ...style[name],
+    iou: result.per_class[name].iou,
+    precision: result.per_class[name].precision,
+    recall: result.per_class[name].recall,
+    f1Score: result.per_class[name].f1,
+    pixels: result.per_class[name].pixels,
+  }));
 
   const sortedClasses = [...classesData].sort((a, b) => b[sortBy] - a[sortBy]);
 
@@ -32,7 +51,7 @@ function ClassPerformance({ model = 'classification' }) {
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
         >
-          <option value="accuracy">Sort by Accuracy</option>
+          <option value="iou">Sort by IoU</option>
           <option value="precision">Sort by Precision</option>
           <option value="recall">Sort by Recall</option>
           <option value="f1Score">Sort by F1-Score</option>
@@ -49,21 +68,21 @@ function ClassPerformance({ model = 'classification' }) {
             onClick={() => setSelectedClass(selectedClass === cls.name ? null : cls.name)}
           >
             <div className="class-header">
-              <span className="class-icon">{cls.icon}</span>
+              <span className="class-icon"><Icon emoji={cls.icon} /></span>
               <span className="class-name">{cls.name}</span>
             </div>
             <div className="class-metrics">
               <div className="metric-bar">
                 <div className="metric-info">
-                  <span>Accuracy</span>
-                  <span className="metric-value">{cls.accuracy}%</span>
+                  <span>IoU</span>
+                  <span className="metric-value">{cls.iou}%</span>
                 </div>
                 <div className="bar-container">
                   <motion.div
                     className="bar-fill"
                     style={{ backgroundColor: cls.color }}
                     initial={{ width: 0 }}
-                    animate={{ width: `${cls.accuracy}%` }}
+                    animate={{ width: `${cls.iou}%` }}
                     transition={{ delay: 0.3 + index * 0.1, duration: 0.8 }}
                   />
                 </div>
@@ -112,12 +131,8 @@ function ClassPerformance({ model = 'classification' }) {
                   <strong>{cls.f1Score}%</strong>
                 </div>
                 <div className="detail-item">
-                  <span>Training Samples:</span>
-                  <strong>{cls.samples.toLocaleString()}</strong>
-                </div>
-                <div className="detail-item">
-                  <span>Best Feature:</span>
-                  <strong>{cls.bestFeature}</strong>
+                  <span>Validation Pixels:</span>
+                  <strong>{cls.pixels.toLocaleString()}</strong>
                 </div>
               </motion.div>
             )}

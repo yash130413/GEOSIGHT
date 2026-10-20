@@ -16,10 +16,14 @@ warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 os.environ['GDAL_NUM_THREADS'] = '1'
 
 # --- CONFIG ---
-TEST_IMG_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Kanpur_tiles_8band_overlap_50"
-MODEL_PATH = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\checkpoints\geosight_final_epoch_16.pt"
-OUTPUT_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Kanpur_predictions_epoch16_filtered"
-VISUAL_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Kanpur_visual_inspection_epoch16_filtered"
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+TEST_IMG_DIR = os.path.join(DATA_ROOT, "Kanpur_tiles_8band_overlap_50")
+MODEL_PATH = os.path.join(DATA_ROOT, "checkpoints", "geosight_final_epoch_16.pt")
+OUTPUT_DIR = os.path.join(DATA_ROOT, "Kanpur_predictions_epoch16_filtered")
+VISUAL_DIR = os.path.join(DATA_ROOT, "Kanpur_visual_inspection_epoch16_filtered")
 BATCH_SIZE = 32
 NUM_SAMPLES = 20
 MIN_WATER_SIZE = 500  # Minimum pixels for valid water body

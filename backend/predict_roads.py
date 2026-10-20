@@ -20,7 +20,7 @@ def load_road_model(model_path, device='cuda'):
         in_channels=3,
         classes=1,
     )
-    state_dict = torch.load(model_path, map_location=device, weights_only=False)
+    state_dict = torch.load(model_path, map_location=device, weights_only=True)
     if 'model' in state_dict:
         state_dict = state_dict['model']
     elif 'state_dict' in state_dict:

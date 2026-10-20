@@ -1,172 +1,82 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 import ModelSummary from '../components/insights/ModelSummary';
 import ConfusionMatrix from '../components/insights/ConfusionMatrix';
 import TrainingGraph from '../components/insights/TrainingGraph';
 import PerformanceRadar from '../components/insights/PerformanceRadar';
 import ClassPerformance from '../components/insights/ClassPerformance';
 import FeatureImportance from '../components/insights/FeatureImportance';
-import PredictionSimulator from '../components/insights/PredictionSimulator';
+import Icon from '../components/common/Icon';
+import evaluation from '../data/modelEvaluation.json';
 import './ModelInsights.css';
+
+const STATS = {
+  classification: [
+    { value: '100', label: 'Best Quality Score' },
+    { value: '42.5%', label: 'Urban Coverage' },
+    { value: '76.2%', label: 'Urban+Rural Score' },
+    { value: '70K+', label: 'Training Tiles' },
+  ],
+  roads: [
+    { value: 'smp.Unet', label: 'Architecture' },
+    { value: 'ResNet-50', label: 'Encoder' },
+    { value: '256×256', label: 'Input Tile Size' },
+    { value: '3 RGB', label: 'Input Channels' },
+  ],
+};
 
 function ModelInsights() {
   const [activeModel, setActiveModel] = useState('classification');
-  const [expandedCard, setExpandedCard] = useState(null);
-  const [scrollY, setScrollY] = useState(0);
-  const [showContent, setShowContent] = useState(false);
-  const isRoad = activeModel === 'roads';
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    if (expandedCard) {
-      setShowContent(false);
-      const timer = setTimeout(() => setShowContent(true), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [expandedCard]);
-
-  const cards = [
-    { id: 'summary', title: '📊 Model Summary', component: ModelSummary },
-    { id: 'radar', title: '🎯 Performance Radar', component: PerformanceRadar },
-    { id: 'class', title: '📈 Class Performance', component: ClassPerformance },
-    { id: 'confusion', title: '🔢 Confusion Matrix', component: ConfusionMatrix },
-    { id: 'training', title: '📉 Training Graph', component: TrainingGraph },
-    { id: 'feature', title: '⚡ Feature Importance', component: FeatureImportance },
-    { id: 'simulator', title: '🎮 Prediction Simulator', component: PredictionSimulator }
-  ];
+  const hasEvaluation = Boolean(evaluation[activeModel]);
+  // Land-cover radar uses the coverage analysis; the road radar needs measured metrics
+  const showRadar = activeModel === 'classification' || hasEvaluation;
 
   return (
-      <div className="model-insights-wrapper">
-      <motion.div 
-        className="insights-hero"
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-      >
-        <div className="hero-gradient"></div>
-        <h1>Model Performance Insights</h1>
-        <p>Deep dive into AI-powered geospatial classification analytics</p>
-        <div className="hero-stats">
-          {isRoad ? (
-            <>
-              <div className="hero-stat">
-                <span className="stat-number">smp.Unet</span>
-                <span className="stat-label">Architecture</span>
-              </div>
-              <div className="hero-stat">
-                <span className="stat-number">ResNet-50</span>
-                <span className="stat-label">Encoder</span>
-              </div>
-              <div className="hero-stat">
-                <span className="stat-number">256×256</span>
-                <span className="stat-label">Input Tile Size</span>
-              </div>
-              <div className="hero-stat">
-                <span className="stat-number">3 RGB</span>
-                <span className="stat-label">Input Channels</span>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="hero-stat">
-                <span className="stat-number">100</span>
-                <span className="stat-label">Best Quality Score</span>
-              </div>
-              <div className="hero-stat">
-                <span className="stat-number">42.5%</span>
-                <span className="stat-label">Urban Coverage</span>
-              </div>
-              <div className="hero-stat">
-                <span className="stat-number">76.2%</span>
-                <span className="stat-label">Urban+Rural Score</span>
-              </div>
-              <div className="hero-stat">
-                <span className="stat-number">70K+</span>
-                <span className="stat-label">Training Tiles</span>
-              </div>
-            </>
-          )}
+    <div className="insights-page">
+      <header className="insights-header">
+        <div>
+          <h1>Model Performance Insights</h1>
+          <p>Deep dive into AI-powered geospatial classification analytics</p>
         </div>
 
-        <div className="model-switcher">
+        <div className="model-switcher" role="tablist" aria-label="Model">
           <button
-            className={`switcher-btn ${!isRoad ? 'active' : ''}`}
+            role="tab"
+            aria-selected={activeModel === 'classification'}
+            className={`switcher-btn ${activeModel === 'classification' ? 'active' : ''}`}
             onClick={() => setActiveModel('classification')}
           >
-            🌍 Land Classification
+            <Icon emoji="🌍" /> Land Classification
           </button>
           <button
-            className={`switcher-btn ${isRoad ? 'active' : ''}`}
+            role="tab"
+            aria-selected={activeModel === 'roads'}
+            className={`switcher-btn ${activeModel === 'roads' ? 'active' : ''}`}
             onClick={() => setActiveModel('roads')}
           >
-            🛣️ Road Detection
+            <Icon emoji="🛣️" /> Road Detection
           </button>
         </div>
-      </motion.div>
+      </header>
 
-      <div className="parallax-cards-container">
-        {cards.map((card, index) => {
-          const parallaxOffset = (scrollY * (0.05 + index * 0.02));
-          const isExpanded = expandedCard === card.id;
-          const Component = card.component;
-          
-          return (
-            <motion.div
-              key={card.id}
-              className={`floating-card ${isExpanded ? 'expanded' : ''}`}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ 
-                opacity: isExpanded ? 1 : (expandedCard ? 0 : 1),
-                scale: isExpanded ? 1 : (expandedCard ? 0 : 1),
-                height: isExpanded ? 'auto' : (expandedCard ? 0 : 'auto'),
-                marginBottom: isExpanded ? 0 : (expandedCard ? 0 : '1rem'),
-                padding: isExpanded ? '3rem' : (expandedCard ? 0 : '2rem 3rem'),
-                overflow: expandedCard && !isExpanded ? 'hidden' : 'visible',
-                zIndex: isExpanded ? 100 : 10
-              }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              whileHover={{ scale: isExpanded ? 1 : 1.05 }}
-              onClick={() => !isExpanded && setExpandedCard(card.id)}
-              style={{
-                willChange: 'transform'
-              }}
-            >
-              {!isExpanded ? (
-                <h3>{card.title}</h3>
-              ) : (
-                <motion.div 
-                  className="card-full-content"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <button className="close-btn" onClick={(e) => {
-                    e.stopPropagation();
-                    setExpandedCard(null);
-                  }}>✕</button>
-                  {showContent && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5 }}
-                      className="typewriter-content"
-                    >
-                      <Component model={activeModel} />
-                    </motion.div>
-                  )}
-                </motion.div>
-              )}
-            </motion.div>
-          );
-        })}
-      </div>
+      <section className="insights-stats" aria-label="Key figures">
+        {STATS[activeModel].map((s) => (
+          <div key={s.label} className="insights-stat">
+            <span className="insights-stat-value">{s.value}</span>
+            <span className="insights-stat-label">{s.label}</span>
+          </div>
+        ))}
+      </section>
 
+      <div className="insights-grid">
+        <div className="span-2"><ModelSummary model={activeModel} /></div>
+        {/* Accuracy panels only appear once Training/evaluate_models.py has produced real numbers */}
+        {showRadar && <PerformanceRadar model={activeModel} />}
+        <div className={showRadar ? '' : 'span-2'}><TrainingGraph model={activeModel} /></div>
+        {hasEvaluation && <ClassPerformance model={activeModel} />}
+        {hasEvaluation && <ConfusionMatrix model={activeModel} />}
+        <div className="span-2"><FeatureImportance model={activeModel} /></div>
       </div>
+    </div>
   );
 }
 

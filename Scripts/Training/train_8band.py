@@ -17,8 +17,12 @@ warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 os.environ['GDAL_NUM_THREADS'] = '1'
 
 # --- Configuration ---
-IMG_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Kanpur_tiles_8band_overlap_50"
-MASK_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Kanpur_masks"  # You'll need masks for Kanpur
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+IMG_DIR = os.path.join(DATA_ROOT, "Kanpur_tiles_8band_overlap_50")
+MASK_DIR = os.path.join(DATA_ROOT, "Kanpur_masks")  # You'll need masks for Kanpur
 BATCH_SIZE = 16
 EPOCHS = 30
 LEARNING_RATE = 1e-4

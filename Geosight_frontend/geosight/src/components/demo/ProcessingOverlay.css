@@ -42,7 +42,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(99, 102, 241, 0.08);
+  background: rgba(11, 110, 153, 0.08);
 }
 
 .scan-line {
@@ -68,8 +68,8 @@
 }
 
 .grid-cell {
-  background: rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: rgba(11, 110, 153, 0.15);
+  border: 1px solid rgba(11, 110, 153, 0.25);
 }
 
 .processing-info {
@@ -88,7 +88,7 @@
 .spinner {
   width: 100%;
   height: 100%;
-  border: 3px solid rgba(99, 102, 241, 0.15);
+  border: 3px solid rgba(11, 110, 153, 0.15);
   border-top: 3px solid var(--accent);
   border-radius: 50%;
 }
@@ -103,13 +103,13 @@
 .processing-progress {
   width: 200px;
   height: 4px;
-  background: rgba(99, 102, 241, 0.15);
+  background: rgba(11, 110, 153, 0.15);
   border-radius: 2px;
   overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #6366F1 0%, #A78BFA 100%);
+  background: linear-gradient(90deg, #0B6E99 0%, #0E8BB5 100%);
   border-radius: 2px;
 }

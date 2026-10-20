@@ -7,8 +7,12 @@ import csv
 
 # --- Configuration ---
 STATE_NAME = 'Delhi'
-INPUT_FOLDER = r'E:\labeled tiles\Delhi_tiles_8band_overlap_50'
-OUTPUT_MASK_DIR = r'C:\Users\Mohvijay-sch\Desktop\GeoSight2\Delhi_Masks'
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+INPUT_FOLDER = os.path.join(DATA_ROOT, "labeled tiles", "Delhi_tiles_8band_overlap_50")
+OUTPUT_MASK_DIR = os.path.join(DATA_ROOT, "Delhi_Masks")
 LOG_FILE = os.path.join(OUTPUT_MASK_DIR, 'labeling_log.csv')
 
 # Thresholds for this specific state

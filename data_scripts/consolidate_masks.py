@@ -2,15 +2,19 @@ import os
 import shutil
 import glob
 from tqdm import tqdm
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 
 def consolidate_masks():
     print("Starting consolidation of masks to SSD...")
     
     # Find all the generated mask folders inside Masked_Dataset
-    MASK_FOLDERS = glob.glob(r'C:\Users\Mohvijay-sch\Desktop\GeoSight2\Masked_Dataset\*_Masks')
+    MASK_FOLDERS = glob.glob(os.path.join(DATA_ROOT, "Masked_Dataset", "*_Masks"))
     
     # The new master folder for masks on your SSD (C: drive)
-    OUTPUT_MASK_DIR = r'C:\Users\Mohvijay-sch\Desktop\GeoSight2\Consolidated_Masked'
+    OUTPUT_MASK_DIR = os.path.join(DATA_ROOT, "Consolidated_Masked")
     os.makedirs(OUTPUT_MASK_DIR, exist_ok=True)
     
     total_moved = 0

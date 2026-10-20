@@ -3,7 +3,12 @@ warnings.filterwarnings('ignore')
 
 import numpy as np
 
-img_path = r'C:\Users\Mohvijay-sch\Desktop\image\UK_tiles_labeled\tile_316.tif'
+import os
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+img_path = os.path.join(DATA_ROOT, "image", "UK_tiles_labeled", "tile_316.tif")
 
 try:
     import tifffile

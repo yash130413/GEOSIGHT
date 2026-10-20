@@ -1,0 +1,31 @@
+.evaluation-pending {
+  padding: 14px 16px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+.evaluation-pending p {
+  font-size: 0.8125rem;
+}
+
+.evaluation-pending .pending-title {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 2px;
+}
+
+.evaluation-pending code {
+  display: block;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--bg-subtle);
+  font-size: 0.75rem;
+  overflow-x: auto;
+  white-space: nowrap;
+}

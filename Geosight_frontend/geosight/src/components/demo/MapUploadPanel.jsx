@@ -5,8 +5,10 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import 'leaflet-draw';
 import Button from '../common/Button';
+import { analyzeRegion, classifyUpload, isSupportedUpload, SUPPORTED_UPLOAD_EXTENSIONS } from '../../services/api';
 import './MapUploadPanel.css';
 
+import Icon from '../common/Icon';
 // Fix Leaflet default icon paths
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -90,7 +92,7 @@ function MapUploadPanel({ onClassify, processing }) {
             console.log('[Map] Draw started:', e.layerType);
           });
           
-          map.on('draw:drawstop', (e) => {
+          map.on('draw:drawstop', () => {
             console.log('[Map] Draw stopped');
           });
           
@@ -127,7 +129,7 @@ function MapUploadPanel({ onClassify, processing }) {
             });
           });
           
-          map.on(L.Draw.Event.DELETED, (e) => {
+          map.on(L.Draw.Event.DELETED, () => {
             console.log('[Map] Rectangle deleted');
             setSelectedBounds(null);
             setErrorMessage(null);
@@ -143,7 +145,7 @@ function MapUploadPanel({ onClassify, processing }) {
                   lon: position.coords.longitude
                 });
               },
-              (error) => {
+              () => {
                 console.log('[Map] Location access denied, using default location');
               }
             );
@@ -172,15 +174,56 @@ function MapUploadPanel({ onClassify, processing }) {
   }, [useMap]);
 
   const handleFileChange = (file) => {
+    setFetchStatus(null);
+    setFetchedImageData(null);
+    if (!file) return;
+    if (file.size === 0) {
+      setSelectedFile(null);
+      setErrorMessage(`"${file.name}" is empty.`);
+      return;
+    }
+    if (!isSupportedUpload(file)) {
+      // The model needs 6 Sentinel-2 bands, which JPG/PNG files cannot hold
+      setSelectedFile(null);
+      setErrorMessage(
+        `"${file.name}" is not supported. Upload a 6-band Sentinel-2 GeoTIFF (${SUPPORTED_UPLOAD_EXTENSIONS.join(', ')}) ` +
+        'with bands B2, B3, B4, B8, B11, B12, or use "Select from Map" instead.'
+      );
+      return;
+    }
+    setErrorMessage(null);
     setSelectedFile(file);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      handleFileChange(file);
+    handleFileChange(e.dataTransfer.files[0]);
+  };
+
+  const handleUploadClassify = async () => {
+    if (!selectedFile) {
+      setErrorMessage('Please choose a GeoTIFF file first');
+      return;
+    }
+
+    setFetchStatus('fetching');
+    setErrorMessage(null);
+    setFetchedImageData(null);
+
+    try {
+      const data = await classifyUpload(selectedFile);
+      if (data.prediction) {
+        setFetchStatus('success');
+        setFetchedImageData(data);
+        onClassify(null, 'upload', data.prediction, data.visualization_4panel);
+      } else {
+        setFetchStatus('error');
+        setErrorMessage('Prediction failed: ' + (data.prediction_error || 'unknown error'));
+      }
+    } catch (err) {
+      setFetchStatus('error');
+      setErrorMessage(err.message);
     }
   };
 
@@ -255,55 +298,7 @@ function MapUploadPanel({ onClassify, processing }) {
     };
     
     setSelectedBounds(bounds);
-    setFetchStatus('fetching');
-    setErrorMessage(null);
-    setFetchedImageData(null);
-    
-    console.log(`[Fetch] Coordinates: Lat ${lat}, Lon ${lon}`);
-    console.log(`[Fetch] Bounds:`, bounds);
-    
-    const endpoint = selectedModel === 'roads' ? '/api/detect-roads' : '/api/fetch-image';
-
-    try {
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bounds: bounds,
-          cloudCover: 10,
-          startDate: '2024-01-01',
-          endDate: '2024-12-31'
-        })
-      });
-      
-      const data = await response.json();
-      
-      console.log('[Fetch] Response:', data);
-      
-      if (response.ok) {
-        if (selectedModel === 'roads' && data.road_detection) {
-          setFetchStatus('success');
-          setFetchedImageData(data);
-          onClassify(null, 'roads', data.road_detection, data.visualization);
-        } else if (selectedModel === 'classification' && data.prediction) {
-          setFetchStatus('success');
-          setFetchedImageData(data);
-          onClassify(null, 'map', data.prediction, data.visualization_4panel);
-        } else if (data.prediction_error) {
-          setFetchStatus('error');
-          setErrorMessage('Prediction failed: ' + data.prediction_error);
-        } else {
-          setFetchStatus('error');
-          setErrorMessage(data.error || 'Analysis failed');
-        }
-      } else {
-        setFetchStatus('error');
-        setErrorMessage(data.error || 'Failed to fetch image');
-      }
-    } catch (err) {
-      setFetchStatus('error');
-      setErrorMessage('Failed to connect to backend: ' + err.message);
-    }
+    await analyzeBounds(bounds);
   };
 
   const handleFetchAndClassify = async () => {
@@ -312,46 +307,32 @@ function MapUploadPanel({ onClassify, processing }) {
       return;
     }
     
+    await analyzeBounds(selectedBounds);
+  };
+
+  // Fetch Sentinel-2 imagery for the bounds and run the selected model
+  const analyzeBounds = async (bounds) => {
     setFetchStatus('fetching');
     setErrorMessage(null);
     setFetchedImageData(null);
-    
-    const endpoint = selectedModel === 'roads' ? '/api/detect-roads' : '/api/fetch-image';
-    
+
     try {
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bounds: selectedBounds,
-          cloudCover: 10,
-          startDate: '2024-01-01',
-          endDate: '2024-12-31'
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        if (selectedModel === 'roads' && data.road_detection) {
-          setFetchStatus('success');
-          setFetchedImageData(data);
-          onClassify(null, 'roads', data.road_detection, data.visualization);
-        } else if (selectedModel === 'classification' && data.prediction) {
-          setFetchStatus('success');
-          setFetchedImageData(data);
-          onClassify(null, 'map', data.prediction, data.visualization_4panel);
-        } else {
-          setFetchStatus('error');
-          setErrorMessage(data.error || 'Analysis failed');
-        }
+      const data = await analyzeRegion(selectedModel, bounds);
+      if (selectedModel === 'roads' && data.road_detection) {
+        setFetchStatus('success');
+        setFetchedImageData(data);
+        onClassify(null, 'roads', data.road_detection, data.visualization);
+      } else if (selectedModel === 'classification' && data.prediction) {
+        setFetchStatus('success');
+        setFetchedImageData(data);
+        onClassify(null, 'map', data.prediction, data.visualization_4panel);
       } else {
         setFetchStatus('error');
-        setErrorMessage(data.error || 'Failed to fetch image');
+        setErrorMessage('Prediction failed: ' + (data.prediction_error || data.error || 'unknown error'));
       }
     } catch (err) {
       setFetchStatus('error');
-      setErrorMessage('Failed to connect to backend: ' + err.message);
+      setErrorMessage(err.message);
     }
   };
   
@@ -412,7 +393,7 @@ function MapUploadPanel({ onClassify, processing }) {
         handleFetchAndClassify();
       }
     } else {
-      onClassify(selectedFile, null);
+      handleUploadClassify();
     }
   };
 
@@ -429,15 +410,15 @@ function MapUploadPanel({ onClassify, processing }) {
         <div className="source-toggle">
           <button 
             className={!useMap ? 'active' : ''}
-            onClick={() => setUseMap(false)}
+            onClick={() => { setUseMap(false); setErrorMessage(null); setFetchStatus(null); setFetchedImageData(null); }}
           >
-            📁 Upload Image
+            <Icon emoji="📁" /> Upload Image
           </button>
           <button 
             className={useMap ? 'active' : ''}
-            onClick={() => setUseMap(true)}
+            onClick={() => { setUseMap(true); setErrorMessage(null); setFetchStatus(null); setFetchedImageData(null); }}
           >
-            🗺️ Select from Map
+            <Icon emoji="🗺️" /> Select from Map
           </button>
         </div>
 
@@ -453,18 +434,18 @@ function MapUploadPanel({ onClassify, processing }) {
               <input 
                 ref={fileInputRef}
                 type="file" 
-                accept="image/*" 
+                accept={SUPPORTED_UPLOAD_EXTENSIONS.join(',')}
                 onChange={(e) => handleFileChange(e.target.files[0])}
                 style={{ display: 'none' }}
               />
               
               {!selectedFile ? (
                 <div className="drop-content">
-                  <div className="upload-icon">📡</div>
+                  <div className="upload-icon"><Icon emoji="📡" /></div>
                   <h3>Drop satellite image here</h3>
                   <p>or click to browse files</p>
                   <div className="supported-formats">
-                    <span>Supported: JPG, PNG, TIFF</span>
+                    <span>Supported: 6-band Sentinel-2 GeoTIFF (.tif)</span>
                   </div>
                 </div>
               ) : (
@@ -476,203 +457,223 @@ function MapUploadPanel({ onClassify, processing }) {
                 </div>
               )}
             </div>
-          </>
-        ) : (
-          <>
-            <div className="location-section">
-              <div className="place-search-section">
-                <h4>🔍 Search by Place Name</h4>
-                <div className="place-search-input">
-                  <input
-                    type="text"
-                    placeholder="e.g., Delhi, Mumbai, Bareilly"
-                    value={placeName}
-                    onChange={(e) => setPlaceName(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && searchPlace()}
-                  />
-                  <button 
-                    className="search-place-btn" 
-                    onClick={searchPlace}
-                    disabled={searchingPlace || !placeName.trim()}
-                  >
-                    {searchingPlace ? 'Searching...' : 'Search'}
-                  </button>
-                </div>
-                <p className="helper-text">Map will navigate to the location and fill coordinates</p>
-              </div>
 
-              <div className="divider-text">OR</div>
-
-              <button className="location-btn" onClick={handleGetLocation}>
-                📍 Get Current Location
-              </button>
-              
-              <div className="divider-text">OR</div>
-              
-              <div className="manual-coords">
-                <h4>Enter Coordinates Manually</h4>
-                <div className="coords-input-group">
-                  <input
-                    type="number"
-                    placeholder="Latitude (e.g., 28.6139)"
-                    value={manualLat}
-                    onChange={(e) => setManualLat(e.target.value)}
-                    step="0.0001"
-                    min="-90"
-                    max="90"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Longitude (e.g., 77.2090)"
-                    value={manualLon}
-                    onChange={(e) => setManualLon(e.target.value)}
-                    step="0.0001"
-                    min="-180"
-                    max="180"
-                  />
-                  <div className="coord-buttons">
-                    <button className="go-btn" onClick={handleGoToCoordinates}>
-                      View on Map
-                    </button>
-                    <button className="fetch-direct-btn" onClick={handleFetchByCoordinates}>
-                      Fetch Directly
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              {currentLocation && (
-                <div className="location-display">
-                  <p>📍 Lat: {currentLocation.lat.toFixed(4)}, Lon: {currentLocation.lon.toFixed(4)}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="model-selection">
-              <h4>Select Analysis Model</h4>
-              <div className="model-buttons">
-                <button 
-                  className={`model-btn ${selectedModel === 'classification' ? 'active' : ''}`}
-                  onClick={() => {
-                    setSelectedModel('classification');
-                    setFetchedImageData(null);
-                    setErrorMessage(null);
-                  }}
-                >
-                  🌍 Land Classification
-                </button>
-                <button 
-                  className={`model-btn ${selectedModel === 'roads' ? 'active' : ''}`}
-                  onClick={() => {
-                    setSelectedModel('roads');
-                    setFetchedImageData(null);
-                    setErrorMessage(null);
-                  }}
-                >
-                  🛣️ Road Detection
-                </button>
-              </div>
-              <p className="model-description">
-                {selectedModel === 'classification' 
-                  ? 'Classifies terrain into: Background, Rural, Urban, Water'
-                  : 'Detects and segments road networks from satellite imagery'}
-              </p>
-            </div>
-
-            <div className="map-container" ref={mapRef}></div>
-
-            {selectedBounds ? (
-              <div className="bounds-display">
-                <h4>Selected Area</h4>
-                <div className="coords-list">
-                  <div><span>Min Lon:</span> <span>{selectedBounds.minLon.toFixed(4)}</span></div>
-                  <div><span>Min Lat:</span> <span>{selectedBounds.minLat.toFixed(4)}</span></div>
-                  <div><span>Max Lon:</span> <span>{selectedBounds.maxLon.toFixed(4)}</span></div>
-                  <div><span>Max Lat:</span> <span>{selectedBounds.maxLat.toFixed(4)}</span></div>
-                </div>
-              </div>
-            ) : (
-              <div className="no-selection-msg">
-                No area selected. Use the rectangle tool to draw on the map.
-              </div>
-            )}
-            
             {errorMessage && (
               <div className="message-box error">
                 <strong>Error:</strong> {errorMessage}
               </div>
             )}
-            
+
             {fetchStatus === 'fetching' && (
               <div className="message-box info">
-                <strong>Info:</strong> Fetching image from Google Earth Engine...
+                <strong>Info:</strong> Running the land-cover model on your image...
               </div>
             )}
-            
-            {fetchedImageData && (
-              <div className="message-box success">
-                <strong>✅ Analysis Complete!</strong>
-                <div className="prediction-summary">
-                  {selectedModel === 'classification' && fetchedImageData.prediction && (
-                    <>
-                      <h4>Dominant Class: {fetchedImageData.prediction.dominant_class}</h4>
-                      <div className="class-breakdown">
-                        {Object.entries(fetchedImageData.prediction.class_distribution).map(([className, stats]) => (
-                          <div key={className} className="class-stat">
-                            <span className="class-name">{className}:</span>
-                            <span className="class-percentage">{stats.percentage}%</span>
-                            <span className="class-confidence">(confidence: {(stats.confidence * 100).toFixed(1)}%)</span>
-                          </div>
-                        ))}
+          </>
+        ) : (
+          <>
+            <div className="map-mode">
+              <div className="map-controls">
+                <div className="model-selection">
+                  <h4>Select Analysis Model</h4>
+                  <div className="model-buttons">
+                    <button
+                      className={`model-btn ${selectedModel === 'classification' ? 'active' : ''}`}
+                      onClick={() => {
+                        setSelectedModel('classification');
+                        setFetchedImageData(null);
+                        setErrorMessage(null);
+                      }}
+                    >
+                      <Icon emoji="🌍" /> Land Classification
+                    </button>
+                    <button
+                      className={`model-btn ${selectedModel === 'roads' ? 'active' : ''}`}
+                      onClick={() => {
+                        setSelectedModel('roads');
+                        setFetchedImageData(null);
+                        setErrorMessage(null);
+                      }}
+                    >
+                      <Icon emoji="🛣️" /> Road Detection
+                    </button>
+                  </div>
+                  <p className="model-description">
+                    {selectedModel === 'classification'
+                      ? 'Classifies terrain into: Background, Rural, Urban, Water'
+                      : 'Detects and segments road networks from satellite imagery'}
+                  </p>
+                </div>
+
+                <div className="location-section">
+                  <div className="place-search-section">
+                    <h4><Icon emoji="🔍" /> Search by Place Name</h4>
+                    <div className="place-search-input">
+                      <input
+                        type="text"
+                        placeholder="e.g., Delhi, Mumbai, Bareilly"
+                        value={placeName}
+                        onChange={(e) => setPlaceName(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && searchPlace()}
+                      />
+                      <button
+                        className="search-place-btn"
+                        onClick={searchPlace}
+                        disabled={searchingPlace || !placeName.trim()}
+                      >
+                        {searchingPlace ? 'Searching...' : 'Search'}
+                      </button>
+                    </div>
+                    <p className="helper-text">Map will navigate to the location and fill coordinates</p>
+                  </div>
+
+                  <div className="divider-text">OR</div>
+
+                  <button className="location-btn" onClick={handleGetLocation}>
+                    <Icon emoji="📍" /> Get Current Location
+                  </button>
+
+                  <div className="divider-text">OR</div>
+
+                  <div className="manual-coords">
+                    <h4>Enter Coordinates Manually</h4>
+                    <div className="coords-input-group">
+                      <input
+                        type="number"
+                        placeholder="Latitude (e.g., 28.6139)"
+                        value={manualLat}
+                        onChange={(e) => setManualLat(e.target.value)}
+                        step="0.0001"
+                        min="-90"
+                        max="90"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Longitude (e.g., 77.2090)"
+                        value={manualLon}
+                        onChange={(e) => setManualLon(e.target.value)}
+                        step="0.0001"
+                        min="-180"
+                        max="180"
+                      />
+                      <div className="coord-buttons">
+                        <button className="go-btn" onClick={handleGoToCoordinates}>
+                          View on Map
+                        </button>
+                        <button className="fetch-direct-btn" onClick={handleFetchByCoordinates}>
+                          Fetch Directly
+                        </button>
                       </div>
-                      <p className="image-details">
-                        <strong>Image:</strong> {fetchedImageData.info.width} x {fetchedImageData.info.height} px | 
-                        {fetchedImageData.info.bands} bands | {fetchedImageData.info.resolution}
-                      </p>
-                    </>
-                  )}
-                  {selectedModel === 'roads' && fetchedImageData.road_detection && (
-                    <>
-                      <h4>Road Detection Results</h4>
-                      <div className="class-breakdown">
-                        <div className="class-stat">
-                          <span className="class-name">Road Coverage:</span>
-                          <span className="class-percentage">{fetchedImageData.road_detection.road_percentage.toFixed(2)}%</span>
-                        </div>
-                        <div className="class-stat">
-                          <span className="class-name">Road Pixels:</span>
-                          <span className="class-percentage">{fetchedImageData.road_detection.road_pixels.toLocaleString()}</span>
-                        </div>
-                        <div className="class-stat">
-                          <span className="class-name">Total Pixels:</span>
-                          <span className="class-percentage">{fetchedImageData.road_detection.total_pixels.toLocaleString()}</span>
-                        </div>
-                      </div>
-                      <p className="image-details">
-                        <strong>Model:</strong> {fetchedImageData.model}
-                      </p>
-                    </>
+                    </div>
+                  </div>
+
+                  {currentLocation && (
+                    <div className="location-display">
+                      <p><Icon emoji="📍" /> Lat: {currentLocation.lat.toFixed(4)}, Lon: {currentLocation.lon.toFixed(4)}</p>
+                    </div>
                   )}
                 </div>
               </div>
-            )}
-            
-            <div className="instructions-box">
-              <h4>Two Ways to Analyze:</h4>
-              <ol>
-                <li><strong>Method 1 - Direct Coordinates:</strong> Enter Lat/Lon and click "Fetch Directly" (creates 2km x 2km area)</li>
-                <li><strong>Method 2 - Draw on Map:</strong> Click rectangle tool, draw custom area, then click "Analyze with AI Model"</li>
-              </ol>
+
+              <div className="map-stage">
+                <div className="map-container" ref={mapRef}></div>
+
+                {selectedBounds ? (
+                  <div className="bounds-display">
+                    <h4>Selected Area</h4>
+                    <div className="coords-list">
+                      <div><span>Min Lon:</span> <span>{selectedBounds.minLon.toFixed(4)}</span></div>
+                      <div><span>Min Lat:</span> <span>{selectedBounds.minLat.toFixed(4)}</span></div>
+                      <div><span>Max Lon:</span> <span>{selectedBounds.maxLon.toFixed(4)}</span></div>
+                      <div><span>Max Lat:</span> <span>{selectedBounds.maxLat.toFixed(4)}</span></div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="no-selection-msg">
+                    No area selected. Use the rectangle tool to draw on the map.
+                  </div>
+                )}
+
+                {errorMessage && (
+                  <div className="message-box error">
+                    <strong>Error:</strong> {errorMessage}
+                  </div>
+                )}
+
+                {fetchStatus === 'fetching' && (
+                  <div className="message-box info">
+                    <strong>Info:</strong> Fetching image from Google Earth Engine...
+                  </div>
+                )}
+
+                {fetchedImageData && (
+                  <div className="message-box success">
+                    <strong><Icon emoji="✅" /> Analysis Complete!</strong>
+                    <div className="prediction-summary">
+                      {selectedModel === 'classification' && fetchedImageData.prediction && (
+                        <>
+                          <h4>Dominant Class: {fetchedImageData.prediction.dominant_class}</h4>
+                          <div className="class-breakdown">
+                            {Object.entries(fetchedImageData.prediction.class_distribution).map(([className, stats]) => (
+                              <div key={className} className="class-stat">
+                                <span className="class-name">{className}:</span>
+                                <span className="class-percentage">{stats.percentage}%</span>
+                                <span className="class-confidence">(confidence: {(stats.confidence * 100).toFixed(1)}%)</span>
+                              </div>
+                            ))}
+                          </div>
+                          <p className="image-details">
+                            <strong>Image:</strong> {fetchedImageData.info.width} x {fetchedImageData.info.height} px
+                            {' | '}{fetchedImageData.info.bands} bands
+                            {fetchedImageData.info.bands > 6 ? ' (model uses the first 6)' : ''}
+                            {' | '}{fetchedImageData.info.resolution}
+                          </p>
+                        </>
+                      )}
+                      {selectedModel === 'roads' && fetchedImageData.road_detection && (
+                        <>
+                          <h4>Road Detection Results</h4>
+                          <div className="class-breakdown">
+                            <div className="class-stat">
+                              <span className="class-name">Road Coverage:</span>
+                              <span className="class-percentage">{fetchedImageData.road_detection.road_percentage.toFixed(2)}%</span>
+                            </div>
+                            <div className="class-stat">
+                              <span className="class-name">Road Pixels:</span>
+                              <span className="class-percentage">{fetchedImageData.road_detection.road_pixels.toLocaleString()}</span>
+                            </div>
+                            <div className="class-stat">
+                              <span className="class-name">Total Pixels:</span>
+                              <span className="class-percentage">{fetchedImageData.road_detection.total_pixels.toLocaleString()}</span>
+                            </div>
+                          </div>
+                          <p className="image-details">
+                            <strong>Model:</strong> {fetchedImageData.model}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="instructions-box">
+                  <h4>Two Ways to Analyze:</h4>
+                  <ol>
+                    <li><strong>Method 1 - Direct Coordinates:</strong> Enter Lat/Lon and click "Fetch Directly" (creates 2km x 2km area)</li>
+                    <li><strong>Method 2 - Draw on Map:</strong> Click rectangle tool, draw custom area, then click "Analyze with AI Model"</li>
+                  </ol>
+                </div>
+              </div>
             </div>
           </>
         )}
 
         <Button 
           onClick={handleSubmit}
-          disabled={processing || (!selectedFile && !selectedBounds)}
+          disabled={processing || fetchStatus === 'fetching' || (useMap ? !selectedBounds : !selectedFile)}
           className={`classify-btn ${processing || fetchStatus === 'fetching' ? 'processing' : ''}`}
         >
-          {processing ? 'Analyzing...' : fetchStatus === 'fetching' ? 'Fetching & Analyzing...' : useMap ? 'Analyze with AI Model' : 'Run Classification'}
+          {processing ? 'Analyzing...' : fetchStatus === 'fetching' ? (useMap ? 'Fetching & Analyzing...' : 'Analyzing...') : useMap ? 'Analyze with AI Model' : 'Run Classification'}
         </Button>
       </motion.div>
     </div>

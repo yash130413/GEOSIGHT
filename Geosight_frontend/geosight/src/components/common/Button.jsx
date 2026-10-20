@@ -1,8 +1,13 @@
 import './Button.css';
 
-function Button({ children, variant = 'primary', onClick, type = 'button' }) {
+function Button({ children, variant = 'primary', onClick, type = 'button', disabled = false, className = '' }) {
   return (
-    <button className={`btn btn-${variant}`} onClick={onClick} type={type}>
+    <button
+      className={`btn btn-${variant} ${className}`.trim()}
+      onClick={onClick}
+      type={type}
+      disabled={disabled}
+    >
       {children}
     </button>
   );

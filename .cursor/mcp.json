@@ -5,7 +5,7 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "C:\\Users\\Mohvijay-sch\\Desktop\\GeoSight2"
+        "${workspaceFolder}"
       ]
     },
     "geosight-sqlite": {
@@ -13,7 +13,7 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-sqlite",
-        "C:\\Users\\Mohvijay-sch\\Desktop\\GeoSight2\\geosight.db"
+        "${workspaceFolder}/geosight.db"
       ]
     },
     "geosight-memory": {

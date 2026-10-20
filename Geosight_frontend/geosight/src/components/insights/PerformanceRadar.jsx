@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import Card from '../common/Card';
+import EvaluationPending from './EvaluationPending';
+import evaluation from '../../data/modelEvaluation.json';
 import './PerformanceRadar.css';
 
+import Icon, { IconText } from '../common/Icon';
 function PerformanceRadar({ model = 'classification' }) {
   const [hoveredMetric, setHoveredMetric] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -14,13 +17,24 @@ function PerformanceRadar({ model = 'classification' }) {
     { label: 'Quality',     value: 100,  angle: 288, description: 'Composite quality score — Epoch 11 achieved perfect 100/100' },
   ];
 
-  const roadMetrics = [
-    { label: 'Road Precision', value: 78, angle: 0,   description: 'Precision of road pixel detection' },
-    { label: 'Road Recall',    value: 72, angle: 72,  description: 'Recall of actual road pixels detected' },
-    { label: 'F1 Score',       value: 75, angle: 144, description: 'Harmonic mean of precision and recall' },
-    { label: 'Connectivity',   value: 68, angle: 216, description: 'Road network graph connectivity score' },
-    { label: 'Skeleton Qual',  value: 82, angle: 288, description: 'Quality of morphological skeleton output' },
-  ];
+  // Road metrics are only shown once Training/evaluate_models.py has measured them
+  const roadEval = evaluation.roads;
+  const roadMetrics = roadEval ? [
+    { label: 'Road Precision', value: roadEval.per_class.Road.precision, angle: 0,   description: 'Predicted road pixels that really are road' },
+    { label: 'Road Recall',    value: roadEval.per_class.Road.recall,    angle: 72,  description: 'Real road pixels the model found' },
+    { label: 'Road F1',        value: roadEval.per_class.Road.f1,        angle: 144, description: 'Harmonic mean of precision and recall' },
+    { label: 'Road IoU',       value: roadEval.per_class.Road.iou,       angle: 216, description: 'Overlap between predicted and real roads' },
+    { label: 'Pixel Acc.',     value: roadEval.pixel_accuracy,           angle: 288, description: 'All pixels (road and non-road) classified correctly' },
+  ] : null;
+
+  if (model === 'roads' && !roadMetrics) {
+    return (
+      <Card className="performance-radar">
+        <h3>Performance Radar</h3>
+        <EvaluationPending model="roads" />
+      </Card>
+    );
+  }
 
   const metrics = model === 'roads' ? roadMetrics : classificationMetrics;
 
@@ -49,7 +63,7 @@ function PerformanceRadar({ model = 'classification' }) {
               cy="150"
               r={(percent / 100) * 120}
               fill="none"
-              stroke="rgba(99, 102, 241, 0.1)"
+              stroke="rgba(11, 110, 153, 0.1)"
               strokeWidth="1"
             />
           ))}
@@ -64,7 +78,7 @@ function PerformanceRadar({ model = 'classification' }) {
                 y1="150"
                 x2={end.x}
                 y2={end.y}
-                stroke="rgba(99, 102, 241, 0.1)"
+                stroke="rgba(11, 110, 153, 0.1)"
                 strokeWidth="1"
               />
             );
@@ -73,7 +87,7 @@ function PerformanceRadar({ model = 'classification' }) {
           {/* Data polygon */}
           <path
             d={pathData}
-            fill="rgba(99, 102, 241, 0.2)"
+            fill="rgba(11, 110, 153, 0.2)"
             stroke="var(--accent)"
             strokeWidth="2"
             className="radar-path"
@@ -124,7 +138,7 @@ function PerformanceRadar({ model = 'classification' }) {
         className="details-btn"
         onClick={() => setShowDetails(!showDetails)}
       >
-        {showDetails ? '📊 Hide Details' : '📊 Show Details'}
+        <IconText text={showDetails ? '📊 Hide Details' : '📊 Show Details'} />
       </button>
 
       {showDetails && (

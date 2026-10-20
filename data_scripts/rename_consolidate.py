@@ -1,19 +1,23 @@
 import os
 import shutil
 from tqdm import tqdm
+# Folder holding the datasets and outputs (formerly a machine-specific drive path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 
 # --- CONFIGURATION ---
 # These are your folders on the E: drive containing the originals
 RAW_IMAGE_FOLDERS = [
-    r'E:\labeled tiles\Delhi_tiles_8band_overlap_50', 
-    r'E:\labeled tiles\Haryana_tiles_labeled',
-    r'E:\labeled tiles\Kanpur_tiles_8band_overlap_50',
-    r'E:\labeled tiles\Sikkim_tiles_labeled',
-    r'E:\labeled tiles\UK_tiles_labeled'
+    os.path.join(DATA_ROOT, "labeled tiles", "Delhi_tiles_8band_overlap_50"), 
+    os.path.join(DATA_ROOT, "labeled tiles", "Haryana_tiles_labeled"),
+    os.path.join(DATA_ROOT, "labeled tiles", "Kanpur_tiles_8band_overlap_50"),
+    os.path.join(DATA_ROOT, "labeled tiles", "Sikkim_tiles_labeled"),
+    os.path.join(DATA_ROOT, "labeled tiles", "UK_tiles_labeled")
 ]
 
 # Create a clean master folder for your consolidated dataset
-OUTPUT_MASTER_DIR = r'E:\GeoSight_Consolidated_Dataset\Images'
+OUTPUT_MASTER_DIR = os.path.join(DATA_ROOT, "GeoSight_Consolidated_Dataset", "Images")
 os.makedirs(OUTPUT_MASTER_DIR, exist_ok=True)
 
 def rename_and_consolidate():

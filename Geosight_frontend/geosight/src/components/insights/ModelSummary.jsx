@@ -23,7 +23,7 @@ const MODEL_2 = [
   { label: 'Encoder', value: 'ResNet-50' },
   { label: 'Input Channels', value: '3 (RGB — B4, B3, B2)' },
   { label: 'Output Classes', value: '2 (Road / Non-Road)' },
-  { label: 'Loss Function', value: 'Binary Cross-Entropy' },
+  { label: 'Loss Function', value: 'Dice + BCE' },
   { label: 'Optimizer', value: 'Adam' },
   { label: 'Activation', value: 'Sigmoid (threshold 0.5)' },
   { label: 'Normalization', value: 'ImageNet Mean/Std' },

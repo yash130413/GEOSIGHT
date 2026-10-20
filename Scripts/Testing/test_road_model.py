@@ -10,9 +10,13 @@ import segmentation_models_pytorch as smp
 from matplotlib import pyplot as plt
 
 # Configuration
-MODEL_PATH = r'G:\GeoSight2\Models\GeoSight_RoadExpert_Final_PyTorch.pt'
-IMG_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\GeoSight_Consolidated_Dataset\Images"
-OUTPUT_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Road_Predictions"
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+MODEL_PATH = os.path.join(DATA_ROOT, "Models", "GeoSight_RoadExpert_Final_PyTorch.pt")
+IMG_DIR = os.path.join(DATA_ROOT, "GeoSight_Consolidated_Dataset", "Images")
+OUTPUT_DIR = os.path.join(DATA_ROOT, "Road_Predictions")
 NUM_SAMPLES = 10  # Number of test images to visualize
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)

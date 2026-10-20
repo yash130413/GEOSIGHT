@@ -16,10 +16,14 @@ warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 os.environ['GDAL_NUM_THREADS'] = '1'
 
 # --- CONFIG ---
-TEST_IMG_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Indore_tiles"
-MODEL_PATH = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\checkpoints\geosight_final_epoch_11.pt"
-OUTPUT_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Indore_predictions_epoch11_filtered"
-VISUAL_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Indore_visual_inspection_epoch11_filtered"
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+TEST_IMG_DIR = os.path.join(DATA_ROOT, "Indore_tiles")
+MODEL_PATH = os.path.join(DATA_ROOT, "checkpoints", "geosight_final_epoch_11.pt")
+OUTPUT_DIR = os.path.join(DATA_ROOT, "Indore_predictions_epoch11_filtered")
+VISUAL_DIR = os.path.join(DATA_ROOT, "Indore_visual_inspection_epoch11_filtered")
 BATCH_SIZE = 32
 NUM_SAMPLES = 20
 MIN_WATER_SIZE = 500

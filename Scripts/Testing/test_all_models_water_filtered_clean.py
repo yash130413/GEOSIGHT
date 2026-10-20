@@ -22,9 +22,13 @@ warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 os.environ['GDAL_NUM_THREADS'] = '1'
 
 # --- CONFIG ---
-TEST_IMG_DIR = r"G:\GeoSight2\Evaluation_Results\Kanpur\Kanpur_tiles_8band_overlap_50"
-CHECKPOINTS_DIR = r"G:\GeoSight2\checkpoints"
-OUTPUT_DIR = r"G:\GeoSight2\Evaluation_Results\Kanpur\Kanpur_all_models_filtered_analysis"
+# Folder holding the datasets and outputs (formerly a machine-specific drive path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+TEST_IMG_DIR = os.path.join(DATA_ROOT, "Evaluation_Results", "Kanpur", "Kanpur_tiles_8band_overlap_50")
+CHECKPOINTS_DIR = os.path.join(DATA_ROOT, "checkpoints")
+OUTPUT_DIR = os.path.join(DATA_ROOT, "Evaluation_Results", "Kanpur", "Kanpur_all_models_filtered_analysis")
 BATCH_SIZE = 32
 MIN_WATER_SIZE = 500
 

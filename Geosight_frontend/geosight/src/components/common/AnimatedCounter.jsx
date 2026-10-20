@@ -6,24 +6,25 @@ function AnimatedCounter({ end, suffix = '', duration = 1.5 }) {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
-  const hasAnimated = useRef(false);
 
+  // Re-run whenever the target value changes, so a reused card never keeps
+  // showing the previous number.
   useEffect(() => {
-    if (isInView && !hasAnimated.current) {
-      hasAnimated.current = true;
-      let startTime;
-      const animate = (timestamp) => {
-        if (!startTime) startTime = timestamp;
-        const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
-        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-        setCount(Math.floor(easeOutQuart * end));
-        
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        }
-      };
-      requestAnimationFrame(animate);
-    }
+    if (!isInView) return;
+    let frame;
+    let startTime;
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      setCount(progress < 1 ? Math.floor(easeOutQuart * end) : end);
+
+      if (progress < 1) {
+        frame = requestAnimationFrame(animate);
+      }
+    };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
   }, [isInView, end, duration]);
 
   return (

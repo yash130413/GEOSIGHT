@@ -6,87 +6,57 @@ import ProcessingOverlay from '../components/demo/ProcessingOverlay';
 import ModelInfoPanel from '../components/demo/ModelInfoPanel';
 import FourPanelVisualization from '../components/demo/FourPanelVisualization';
 import RoadVisualization from '../components/demo/RoadVisualization';
-import { classifyImage } from '../services/api';
+import { getFileUrl } from '../services/api';
 import './LiveDemo.css';
 
+import Icon, { IconText } from '../components/common/Icon';
 function LiveDemo() {
   const [prediction, setPrediction] = useState(null);
   const [processing, setProcessing] = useState(false);
-  const [uploadedImage, setUploadedImage] = useState(null);
-  const [showFeatureMap, setShowFeatureMap] = useState(false);
   const [fourPanelUrl, setFourPanelUrl] = useState(null);
   const [showFourPanel, setShowFourPanel] = useState(false);
   const [vizMode, setVizMode] = useState('classification');
 
-  const handleClassify = async (file, region, predictionData, visualization4panel) => {
+  // Called by MapUploadPanel once the backend has returned a real prediction.
+  // region: 'roads' for road detection, anything else for land-cover classification
+  const handleClassify = async (file, region, predictionData, visualizationFile) => {
+    if (!predictionData) return;
+
     setProcessing(true);
     setPrediction(null);
     setFourPanelUrl(null);
     setShowFourPanel(false);
     setVizMode(region === 'roads' ? 'roads' : 'classification');
-    
-    console.log('[LiveDemo] New analysis request');
-    console.log('[LiveDemo] Region:', region);
-    console.log('[LiveDemo] Prediction data:', predictionData);
-    console.log('[LiveDemo] Visualization:', visualization4panel);
-    
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setUploadedImage(imageUrl);
-    } else if (predictionData) {
-      setUploadedImage('https://via.placeholder.com/400x400?text=Satellite+Image');
-    }
 
     try {
-      if (predictionData) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        if (region === 'roads') {
-          // Road detection results
-          const result = {
-            category: 'Road Network',
-            confidence: 0.95,
-            roadCoverage: predictionData.road_percentage,
-            roadPixels: predictionData.road_pixels,
-            totalPixels: predictionData.total_pixels,
-            isRoadDetection: true
-          };
-          setPrediction(result);
-        } else {
-          // Classification results
-          const result = {
-            category: predictionData.dominant_class,
-            confidence: predictionData.class_distribution[predictionData.dominant_class].confidence,
-            classDistribution: predictionData.class_distribution,
-            imageSize: predictionData.image_size,
-            totalPixels: predictionData.total_pixels,
-            isRoadDetection: false
-          };
-          setPrediction(result);
-        }
-        
-        if (visualization4panel) {
-          const timestamp = new Date().getTime();
-          const panelUrl = `http://localhost:5000/api/download/${visualization4panel}?t=${timestamp}`;
-          console.log('[LiveDemo] Setting visualization URL:', panelUrl);
-          setFourPanelUrl(panelUrl);
-        }
+      // Short pause so the processing animation is visible
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      if (region === 'roads') {
+        // The road model gives a per-pixel mask, not a calibrated confidence,
+        // so the card shows road coverage instead of a confidence score.
+        setPrediction({
+          category: 'Road Network',
+          roadCoverage: predictionData.road_percentage,
+          roadPixels: predictionData.road_pixels,
+          totalPixels: predictionData.total_pixels,
+          isRoadDetection: true
+        });
       } else {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        const mockResult = {
-          category: 'Urban',
-          confidence: 0.87 + Math.random() * 0.1,
-          vegetation: Math.random() * 0.4,
-          builtUp: 0.6 + Math.random() * 0.3,
-          roadDensity: Math.random() > 0.5 ? 'High' : 'Medium',
+        setPrediction({
+          category: predictionData.dominant_class,
+          // Mean softmax probability of the pixels assigned to the dominant class
+          confidence: predictionData.class_distribution[predictionData.dominant_class].confidence,
+          classDistribution: predictionData.class_distribution,
+          imageSize: predictionData.image_size,
+          totalPixels: predictionData.total_pixels,
           isRoadDetection: false
-        };
-        
-        setPrediction(mockResult);
+        });
       }
-    } catch (error) {
-      console.error('Analysis failed:', error);
+
+      if (visualizationFile) {
+        setFourPanelUrl(`${getFileUrl(visualizationFile)}?t=${Date.now()}`);
+      }
     } finally {
       setProcessing(false);
     }
@@ -116,9 +86,7 @@ function LiveDemo() {
             processing={processing}
           />
           
-          {processing && uploadedImage && (
-            <ProcessingOverlay image={uploadedImage} />
-          )}
+          {processing && <ProcessingOverlay />}
         </motion.div>
         
         <motion.div 
@@ -137,9 +105,9 @@ function LiveDemo() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.4 }}
               >
-                <div className="empty-icon">🛰️</div>
+                <div className="empty-icon"><Icon emoji="🛰️" /></div>
                 <h3>Ready for Analysis</h3>
-                <p>Upload a satellite image to begin classification.</p>
+                <p>Upload a GeoTIFF or select an area on the map to begin.</p>
               </motion.div>
             )}
             
@@ -162,7 +130,7 @@ function LiveDemo() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    {vizMode === 'roads' ? '🛣️ View Road Detection Visualization' : '🖼️ View 4-Panel Visualization'}
+                    <IconText text={vizMode === 'roads' ? '🛣️ View Road Detection Visualization' : '🖼️ View 4-Panel Visualization'} />
                   </motion.button>
                 )}
                 <ModelInfoPanel isRoadDetection={prediction?.isRoadDetection} />

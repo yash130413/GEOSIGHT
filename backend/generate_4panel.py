@@ -24,7 +24,7 @@ def load_model(checkpoint_path):
         in_channels=6,
         classes=4
     ).to(device)
-    model.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    model.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=True))
     model.eval()
     return model
 

@@ -14,9 +14,13 @@ warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 os.environ['GDAL_NUM_THREADS'] = '1'
 
 # --- CONFIG ---
-TEST_IMG_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\Indore_tiles"
-CHECKPOINTS_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\checkpoints"
-OUTPUT_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\epoch_comparison"
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+TEST_IMG_DIR = os.path.join(DATA_ROOT, "Indore_tiles")
+CHECKPOINTS_DIR = os.path.join(DATA_ROOT, "checkpoints")
+OUTPUT_DIR = os.path.join(DATA_ROOT, "epoch_comparison")
 BATCH_SIZE = 32
 # Test only a subset of epochs for quick comparison
 EPOCHS_TO_TEST = [1, 2, 5, 10, 15, 20, 25, 30]

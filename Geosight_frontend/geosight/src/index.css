@@ -1,22 +1,51 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/*
+ * GeoSight design tokens
+ * Minimal light theme; colours taken from the project itself:
+ *   ocean blue (water class / satellite imagery) as the accent,
+ *   forest green (rural/land class) as the secondary accent.
+ */
 :root {
   --bg-primary: #F8FAFC;
-  --bg-card: #ffffff;
-  --accent: #6366F1;
-  --accent-secondary: #A78BFA;
-  --text-primary: #111111;
-  --text-secondary: #4B5563;
-  --text-muted: #6B7280;
-  --rural: #22c55e;
-  --urban: #06b6d4;
-  --town: #eab308;
-  --gradient-1: linear-gradient(135deg, #6366F1 0%, #A78BFA 100%);
-  --gradient-2: linear-gradient(135deg, #22C55E 0%, #06B6D4 100%);
-  --gradient-3: linear-gradient(135deg, #F59E0B 0%, #EC4899 100%);
-  
-  --font-heading: 'Space Grotesk', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --bg-card: #FFFFFF;
+  --bg-subtle: #F1F5F9;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+
+  --accent: #0B6E99;
+  --accent-hover: #085A7E;
+  --accent-soft: #E7F3F8;
+  --accent-secondary: #15803D;
+  --accent-secondary-soft: #E8F5EC;
+
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+
+  /* Land-cover class colours (same as the model's visualizations) */
+  --rural: #228B22;
+  --urban: #E05252;
+  --water: #4169E1;
+  --background-class: #808080;
+  --town: #CA8A04;
+
+  /* Kept for components that still reference them */
+  --gradient-1: linear-gradient(135deg, var(--accent) 0%, #0E8BB5 100%);
+  --gradient-2: linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent) 100%);
+  --gradient-3: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+
+  --font-heading: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.10);
+
+  --container: 1200px;
 }
 
 * {
@@ -30,11 +59,11 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-secondary);
   line-height: 1.6;
-  perspective: 1200px;
   overflow-x: hidden;
-  overflow-y: auto;
   min-width: 320px;
   font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -42,21 +71,21 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
   font-weight: 600;
   line-height: 1.2;
+  letter-spacing: -0.015em;
 }
 
 h1 {
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-size: clamp(2.25rem, 4.5vw, 3.5rem);
   font-weight: 700;
+  letter-spacing: -0.025em;
 }
 
 h2 {
-  font-size: clamp(2rem, 4vw, 2.5rem);
-  font-weight: 600;
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
 }
 
 h3 {
-  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
-  font-weight: 600;
+  font-size: clamp(1.125rem, 1.6vw, 1.25rem);
 }
 
 p {
@@ -66,53 +95,30 @@ p {
   line-height: 1.7;
 }
 
-/* Hide all scrollbars */
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  display: block !important;
-  width: 8px !important;
-  height: 8px !important;
-}
-
-html::-webkit-scrollbar-track,
-body::-webkit-scrollbar-track {
-  background: rgba(99, 102, 241, 0.05);
-}
-
-html::-webkit-scrollbar-thumb,
-body::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #6366F1 0%, #A78BFA 100%);
-  border-radius: 4px;
-}
-
-html::-webkit-scrollbar-thumb:hover,
-body::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #4F46E5 0%, #9333EA 100%);
-}
-
-*::-webkit-scrollbar {
-  width: 8px !important;
-  height: 8px !important;
-}
-
-*::-webkit-scrollbar-track {
-  background: rgba(99, 102, 241, 0.05);
-}
-
-*::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #6366F1 0%, #A78BFA 100%);
-  border-radius: 4px;
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #4F46E5 0%, #9333EA 100%);
-}
-
+/* Thin, neutral scrollbars */
 html,
 body,
 * {
   scrollbar-width: thin;
-  scrollbar-color: #6366F1 rgba(99, 102, 241, 0.05);
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 a {
@@ -126,6 +132,117 @@ button {
   font-weight: 500;
 }
 
-input, select {
+input, select, textarea {
   font-family: var(--font-body);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+/* Shared page layout helpers */
+.gs-container {
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.gs-section {
+  padding: 96px 0;
+}
+
+.gs-section-alt {
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.gs-eyebrow {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.gs-section-head {
+  max-width: 640px;
+  margin: 0 auto 56px;
+  text-align: center;
+}
+
+.gs-section-head p {
+  margin-top: 12px;
+  font-size: 1.0625rem;
+}
+
+.gs-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.gs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.gs-btn-primary {
+  background: var(--accent);
+  color: #FFFFFF;
+  box-shadow: var(--shadow-sm);
+}
+
+.gs-btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.gs-btn-secondary {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.gs-btn-secondary:hover {
+  border-color: var(--text-muted);
+  background: var(--bg-subtle);
+}
+
+@media (max-width: 768px) {
+  .gs-section {
+    padding: 64px 0;
+  }
+
+  .gs-section-head {
+    margin-bottom: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

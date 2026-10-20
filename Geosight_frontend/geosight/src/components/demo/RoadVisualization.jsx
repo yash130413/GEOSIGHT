@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import './RoadVisualization.css';
 
+import Icon from '../common/Icon';
 function RoadVisualization({ imageUrl, onClose }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -31,10 +32,10 @@ function RoadVisualization({ imageUrl, onClose }) {
         <div className="road-viz-content">
           {imageError && (
             <div className="road-viz-error">
-              <p>❌ Failed to load visualization</p>
+              <p><Icon emoji="❌" /> Failed to load visualization</p>
               <p style={{fontSize:'0.75rem', color:'#6b7280', wordBreak:'break-all'}}>URL: {imageUrl}</p>
               <a href={imageUrl} target="_blank" rel="noopener noreferrer">
-                🔗 Open in New Tab
+                <Icon emoji="🔗" /> Open in New Tab
               </a>
             </div>
           )}

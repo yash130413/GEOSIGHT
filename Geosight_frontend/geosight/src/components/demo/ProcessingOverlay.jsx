@@ -30,7 +30,7 @@ function ProcessingOverlay({ image }) {
     >
       <div className="processing-container">
         <div className="image-scan">
-          <img src={image} alt="Processing" />
+          {image && <img src={image} alt="Processing" />}
           <div className="scan-overlay">
             <motion.div 
               className="scan-line"

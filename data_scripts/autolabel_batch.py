@@ -7,15 +7,19 @@ import csv
 from datetime import datetime
 
 # I have updated the input folders to match the exact paths we found in your E:\labeled tiles folder!
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 INPUT_FOLDERS = [
-    r'E:\labeled tiles\Delhi_tiles_8band_overlap_50',
-    r'E:\labeled tiles\Haryana_tiles_labeled',
-    r'E:\labeled tiles\Kanpur_tiles_8band_overlap_50 (1)',
-    r'E:\labeled tiles\Sikkim_tiles_labeled',
-    r'E:\labeled tiles\UK_tiles_labeled'
+    os.path.join(DATA_ROOT, "labeled tiles", "Delhi_tiles_8band_overlap_50"),
+    os.path.join(DATA_ROOT, "labeled tiles", "Haryana_tiles_labeled"),
+    os.path.join(DATA_ROOT, "labeled tiles", "Kanpur_tiles_8band_overlap_50 (1)"),
+    os.path.join(DATA_ROOT, "labeled tiles", "Sikkim_tiles_labeled"),
+    os.path.join(DATA_ROOT, "labeled tiles", "UK_tiles_labeled")
 ]
-OUTPUT_MASK_DIR = r'C:\Users\Mohvijay-sch\Desktop\GeoSight2'
-LOG_FILE = r'C:\Users\Mohvijay-sch\Desktop\GeoSight2\labeling_log.csv'
+OUTPUT_MASK_DIR = DATA_ROOT
+LOG_FILE = os.path.join(DATA_ROOT, "labeling_log.csv")
 os.makedirs(OUTPUT_MASK_DIR, exist_ok=True)
 
 # --- Per-region thresholds (Phase 2 improvement baked in) ---

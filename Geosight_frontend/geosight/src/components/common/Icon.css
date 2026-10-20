@@ -1,0 +1,65 @@
+/* Icons size themselves to the surrounding font-size, like the emojis they replace */
+.gs-icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  vertical-align: -0.14em;
+}
+
+/* Inline in a heading/label: a little space before the text */
+h1 > .gs-icon, h2 > .gs-icon, h3 > .gs-icon, h4 > .gs-icon,
+button > .gs-icon, a > .gs-icon, strong > .gs-icon, span > .gs-icon:first-child, p > .gs-icon:first-child {
+  margin-right: 0.4em;
+}
+
+/* Stand-alone icon tiles: brand accent colour */
+.section-icon .gs-icon,
+.holo-icon .gs-icon,
+.use-case-icon .gs-icon,
+.arc-icon .gs-icon,
+.main-arc-icon .gs-icon,
+.metric-icon .gs-icon,
+.impact-icon .gs-icon,
+.source-icon .gs-icon,
+.spec-icon .gs-icon,
+.config-icon .gs-icon,
+.marker-icon .gs-icon,
+.achievement-icon .gs-icon,
+.member-avatar .gs-icon,
+.empty-icon .gs-icon,
+.upload-icon .gs-icon,
+.highlight-icon .gs-icon,
+.class-icon .gs-icon,
+.legend-icon .gs-icon,
+.tech-icon .gs-icon {
+  color: var(--accent);
+  margin-right: 0;
+}
+
+/* Feature icons sit on a soft tinted tile (icon at half the old emoji size,
+   tile the same size as the old emoji, so surrounding layout is unchanged) */
+.section-icon .gs-icon,
+.holo-icon .gs-icon,
+.use-case-icon .gs-icon,
+.arc-icon .gs-icon,
+.main-arc-icon .gs-icon,
+.empty-icon .gs-icon,
+.metric-icon .gs-icon,
+.impact-icon .gs-icon {
+  font-size: 0.5em;
+  width: 2em;
+  height: 2em;
+  padding: 0.5em;
+  box-sizing: border-box;
+  border-radius: 0.6em;
+  background: linear-gradient(135deg, rgba(11, 110, 153, 0.14), rgba(14, 139, 181, 0.14));
+  box-shadow: inset 0 0 0 1px rgba(11, 110, 153, 0.12);
+  vertical-align: middle;
+}
+
+/* Large decorative icon on the About hero */
+.hero-icon .gs-icon {
+  color: var(--accent);
+  opacity: 0.85;
+  stroke-width: 1.25;
+}

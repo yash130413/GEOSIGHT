@@ -22,10 +22,14 @@ if sys.platform == 'win32':
 warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 os.environ['GDAL_NUM_THREADS'] = '1'
 
-TEST_IMG_DIR = r"G:\GeoSight2\Evaluation_Results\Indore\Indore_tiles"
-CHECKPOINTS_DIR = r"G:\GeoSight2\checkpoints"
-OUTPUT_DIR = r"G:\GeoSight2\Evaluation_Results\Indore\Indore_all_models_filtered_analysis"
-VISUAL_DIR = r"G:\GeoSight2\Evaluation_Results\Indore\Indore_visual_inspection_best_model_filtered"
+# Folder holding the datasets and outputs (formerly a machine-specific drive path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+TEST_IMG_DIR = os.path.join(DATA_ROOT, "Evaluation_Results", "Indore", "Indore_tiles")
+CHECKPOINTS_DIR = os.path.join(DATA_ROOT, "checkpoints")
+OUTPUT_DIR = os.path.join(DATA_ROOT, "Evaluation_Results", "Indore", "Indore_all_models_filtered_analysis")
+VISUAL_DIR = os.path.join(DATA_ROOT, "Evaluation_Results", "Indore", "Indore_visual_inspection_best_model_filtered")
 BATCH_SIZE = 1
 MIN_WATER_SIZE = 500
 NUM_SAMPLES = 10

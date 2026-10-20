@@ -17,24 +17,21 @@ function EnhancedPredictionCard({ prediction }) {
 
   const { category, confidence, classDistribution, imageSize, totalPixels, isRoadDetection, roadCoverage, roadPixels } = prediction;
   
-  console.log('[EnhancedPredictionCard] Category:', category);
-  console.log('[EnhancedPredictionCard] Is Road Detection:', isRoadDetection);
-  console.log('[EnhancedPredictionCard] Class Distribution:', classDistribution);
-  
+  // Every value below comes straight from the backend response.
   const features = isRoadDetection ? [
-    { label: 'Road Coverage', value: roadCoverage, confidence: null, color: '#f59e0b' },
-    { label: 'Non-Road Area', value: 100 - roadCoverage, confidence: null, color: '#6b7280' }
-  ] : classDistribution ? 
-    Object.entries(classDistribution).map(([name, stats]) => ({
+    { label: 'Road Coverage', value: roadCoverage, confidence: null, color: '#D97706' },
+    { label: 'Non-Road Area', value: 100 - roadCoverage, confidence: null, color: 'var(--background-class)' }
+  ] : Object.entries(classDistribution || {}).map(([name, stats]) => ({
       label: name,
       value: stats.percentage,
       confidence: stats.confidence,
-      color: name === 'Urban' ? '#0ea5e9' : name === 'Rural' ? '#10b981' : name === 'Water' ? '#3b82f6' : '#6b7280'
-    })) : [
-      { label: 'Vegetation Coverage', value: (prediction.vegetation || 0) * 100, confidence: null, color: '#10b981' },
-      { label: 'Built-up Area', value: (prediction.builtUp || 0) * 100, confidence: null, color: '#0ea5e9' },
-      { label: 'Road Density', value: prediction.roadDensity === 'High' ? 85 : prediction.roadDensity === 'Medium' ? 60 : 35, confidence: null, color: '#f59e0b' }
-    ];
+      color: name === 'Urban' ? 'var(--urban)' : name === 'Rural' ? 'var(--rural)' : name === 'Water' ? 'var(--water)' : 'var(--background-class)'
+    }));
+
+  // Ring: mean model confidence for land cover; for roads there is no
+  // calibrated confidence, so the ring shows road coverage instead.
+  const ringValue = Math.min(Math.max((isRoadDetection ? roadCoverage / 100 : confidence) || 0, 0), 1);
+  const ringLabel = isRoadDetection ? 'Road Coverage' : 'Mean Confidence';
 
   return (
     <motion.div 
@@ -59,7 +56,7 @@ function EnhancedPredictionCard({ prediction }) {
             <motion.div 
               className="ring-progress"
               initial={{ pathLength: 0 }}
-              animate={{ pathLength: confidence }}
+              animate={{ pathLength: ringValue }}
               transition={{ duration: 1.2, delay: 0.4, ease: 'easeOut' }}
             >
               <svg viewBox="0 0 100 100">
@@ -68,7 +65,7 @@ function EnhancedPredictionCard({ prediction }) {
                   cy="50"
                   r="45"
                   fill="none"
-                  stroke="rgba(14, 165, 233, 0.2)"
+                  stroke="var(--accent-soft)"
                   strokeWidth="8"
                 />
                 <motion.circle
@@ -80,19 +77,19 @@ function EnhancedPredictionCard({ prediction }) {
                   strokeWidth="8"
                   strokeLinecap="round"
                   strokeDasharray={`${2 * Math.PI * 45}`}
-                  strokeDashoffset={`${2 * Math.PI * 45 * (1 - confidence)}`}
+                  strokeDashoffset={`${2 * Math.PI * 45 * (1 - ringValue)}`}
                   transform="rotate(-90 50 50)"
                   initial={{ strokeDashoffset: `${2 * Math.PI * 45}` }}
-                  animate={{ strokeDashoffset: `${2 * Math.PI * 45 * (1 - confidence)}` }}
+                  animate={{ strokeDashoffset: `${2 * Math.PI * 45 * (1 - ringValue)}` }}
                   transition={{ duration: 1.2, delay: 0.4, ease: 'easeOut' }}
                 />
               </svg>
             </motion.div>
             <div className="confidence-value">
-              <AnimatedCounter end={Math.round(confidence * 100)} suffix="%" />
+              <AnimatedCounter end={Math.round(ringValue * 100)} suffix="%" />
             </div>
           </div>
-          <p className="confidence-label">Confidence</p>
+          <p className="confidence-label">{ringLabel}</p>
         </div>
       </div>
 

@@ -1,79 +1,76 @@
-export const classifyImage = async (file, region) => {
-  await new Promise(resolve => setTimeout(resolve, 2000));
+// All calls to the GeoSight Flask backend go through this file.
+// Set VITE_API_BASE_URL in .env to point the frontend at a different backend.
+export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000').replace(/\/+$/, '');
 
-  const mockResponses = {
-    mumbai: {
-      category: 'Urban',
-      confidence: 0.92,
-      vegetation: 0.15,
-      builtUp: 0.78,
-      roadDensity: 'High',
-      probabilities: { rural: 0.04, urban: 0.92, town: 0.04 }
-    },
-    village: {
-      category: 'Rural',
-      confidence: 0.88,
-      vegetation: 0.72,
-      builtUp: 0.12,
-      roadDensity: 'Low',
-      probabilities: { rural: 0.88, urban: 0.06, town: 0.06 }
-    },
-    town: {
-      category: 'Town',
-      confidence: 0.85,
-      vegetation: 0.45,
-      builtUp: 0.42,
-      roadDensity: 'Medium',
-      probabilities: { rural: 0.08, urban: 0.07, town: 0.85 }
-    },
-    delhi: {
-      category: 'Urban',
-      confidence: 0.94,
-      vegetation: 0.18,
-      builtUp: 0.75,
-      roadDensity: 'High',
-      probabilities: { rural: 0.02, urban: 0.94, town: 0.04 }
-    }
-  };
+// Earth Engine download + model inference can take a while on large areas
+const ANALYSIS_TIMEOUT_MS = 5 * 60 * 1000;
 
-  return mockResponses[region] || mockResponses.mumbai;
-};
+export const SUPPORTED_UPLOAD_EXTENSIONS = ['.tif', '.tiff'];
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+export const isSupportedUpload = (file) =>
+  !!file && SUPPORTED_UPLOAD_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(ext));
 
-export const fetchSatelliteImage = async (bounds) => {
+/** URL for a file the backend generated (GeoTIFF or PNG visualization). */
+export const getFileUrl = (filename) =>
+  `${API_BASE_URL}/api/download/${encodeURIComponent(filename)}`;
+
+/**
+ * fetch() wrapper with a timeout and readable errors.
+ * Resolves with the parsed JSON body; rejects with an Error whose message
+ * is safe to show to the user.
+ */
+async function request(path, options = {}, timeoutMs = ANALYSIS_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  let response;
   try {
-    const response = await fetch(`${API_BASE_URL}/api/fetch-image`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        bounds,
-        cloudCover: 10,
-        startDate: '2024-01-01',
-        endDate: '2024-12-31'
-      })
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch satellite image');
+    response = await fetch(`${API_BASE_URL}${path}`, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error(`The backend did not respond within ${Math.round(timeoutMs / 1000)} seconds. Try a smaller area.`);
     }
-    
-    return await response.json();
-  } catch (error) {
-    throw error;
+    throw new Error(`Could not reach the backend at ${API_BASE_URL}. Is it running?`);
+  } finally {
+    clearTimeout(timer);
   }
-};
 
-export const classifyMapImage = async (imageData) => {
-  // Mock classification for map-based images
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  return {
-    category: 'Rural',
-    confidence: 0.89,
-    vegetation: 0.65,
-    builtUp: 0.25,
-    roadDensity: 'Medium',
-    probabilities: { rural: 0.89, urban: 0.06, town: 0.05 }
-  };
+  let data = null;
+  try {
+    data = await response.json();
+  } catch {
+    // Non-JSON body (e.g. a proxy error page)
+  }
+
+  if (!response.ok) {
+    const message = data?.error || `Backend returned an error (HTTP ${response.status})`;
+    throw new Error(data?.suggestion ? `${message}. ${data.suggestion}` : message);
+  }
+  if (!data) {
+    throw new Error('Backend returned an empty or invalid response');
+  }
+  return data;
+}
+
+/**
+ * Fetch a Sentinel-2 image for the given bounds and run a model on it.
+ * model: 'classification' (land cover) or 'roads'
+ */
+export const analyzeRegion = (model, bounds) =>
+  request(model === 'roads' ? '/api/detect-roads' : '/api/fetch-image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      bounds,
+      cloudCover: 10,
+      startDate: '2024-01-01',
+      endDate: '2024-12-31'
+    })
+  });
+
+/** Run land-cover classification on an uploaded 6-band GeoTIFF. */
+export const classifyUpload = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return request('/api/predict-upload', { method: 'POST', body: formData });
 };

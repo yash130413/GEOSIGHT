@@ -8,9 +8,13 @@ import sknw
 import os
 
 # --- PATHS ---
-PRED_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\GeoSight_Final_Predictions"
-IMG_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\GeoSight_Consolidated_Dataset\Images"
-OUTPUT_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\GEOSIGHT_SIGNATURE_RESULTS"
+# Folder holding the datasets and outputs (formerly a personal Desktop path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+PRED_DIR = os.path.join(DATA_ROOT, "GeoSight_Final_Predictions")
+IMG_DIR = os.path.join(DATA_ROOT, "GeoSight_Consolidated_Dataset", "Images")
+OUTPUT_DIR = os.path.join(DATA_ROOT, "GEOSIGHT_SIGNATURE_RESULTS")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # YOUR FULL 40 CHAMPION TILES
@@ -272,7 +276,7 @@ def generate_signature_outputs():
 
     # Generate the A.4 Output Metrics Report
     import csv
-    METRICS_DIR = r"C:\Users\Mohvijay-sch\Desktop\GeoSight2\outputs\metrics"
+    METRICS_DIR = os.path.join(DATA_ROOT, "outputs", "metrics")
     os.makedirs(METRICS_DIR, exist_ok=True)
     csv_path = os.path.join(METRICS_DIR, "tile_metrics.csv")
     

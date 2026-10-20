@@ -3,13 +3,17 @@ import numpy as np
 import os
 import random
 from tqdm import tqdm
+# Folder holding the datasets and outputs (formerly a machine-specific drive path).
+# Set GEOSIGHT_DATA_ROOT to use another location; defaults to the repository root.
+DATA_ROOT = os.environ.get("GEOSIGHT_DATA_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 
 folders = [
-    r'E:\Delhi_tiles_8band_overlap_50', 
-    r'E:\Haryana_all_combined_tif_tiles',
-    r'E:\Kanpur_tiles_8band_overlap_50',
-    r'E:\Sikkim_tiles_8band_overlap_50pct_clean',
-    r'E:\UK_tiles_all_tif'
+    os.path.join(DATA_ROOT, "Delhi_tiles_8band_overlap_50"), 
+    os.path.join(DATA_ROOT, "Haryana_all_combined_tif_tiles"),
+    os.path.join(DATA_ROOT, "Kanpur_tiles_8band_overlap_50"),
+    os.path.join(DATA_ROOT, "Sikkim_tiles_8band_overlap_50pct_clean"),
+    os.path.join(DATA_ROOT, "UK_tiles_all_tif")
 ]
 
 def get_folder_stats(folder_path, num_samples=100):

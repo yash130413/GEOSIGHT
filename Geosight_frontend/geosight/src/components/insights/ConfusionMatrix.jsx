@@ -1,30 +1,35 @@
 import Card from '../common/Card';
+import EvaluationPending from './EvaluationPending';
+import evaluation from '../../data/modelEvaluation.json';
 import './ConfusionMatrix.css';
 
+// Values come from Training/evaluate_models.py (src/data/modelEvaluation.json).
 function ConfusionMatrix({ model = 'classification' }) {
-  const isRoad = model === 'roads';
+  const result = evaluation[model === 'roads' ? 'roads' : 'classification'];
 
-  const classMatrix = [
-    [89, 4,  5,  2],
-    [3,  88, 7,  2],
-    [4,  6,  87, 3],
-    [2,  1,  3,  94],
-  ];
-  const classLabels = ['Background', 'Rural', 'Urban', 'Water'];
+  if (!result) {
+    return (
+      <Card className="confusion-matrix">
+        <h3>Confusion Matrix</h3>
+        <EvaluationPending model={model} />
+      </Card>
+    );
+  }
 
-  const roadMatrix = [
-    [91, 9],
-    [22, 78],
-  ];
-  const roadLabels = ['Non-Road', 'Road'];
-
-  const matrix = isRoad ? roadMatrix : classMatrix;
-  const labels = isRoad ? roadLabels : classLabels;
+  const labels = result.classes;
+  // Show each row as a percentage of that true class's pixels
+  const matrix = result.confusion_matrix.map((row) => {
+    const total = row.reduce((a, b) => a + b, 0);
+    return row.map((v) => (total ? (v / total) * 100 : 0));
+  });
 
   return (
     <Card className="confusion-matrix">
       <h3>Confusion Matrix</h3>
-      <p className="matrix-subtitle">Compares <strong>Actual class vs Predicted class</strong> across 4 terrain categories on Sentinel-2 imagery.</p>
+      <p className="matrix-subtitle">
+        Rows are the <strong>actual</strong> class, columns the <strong>predicted</strong> class
+        (% of each actual class's pixels).
+      </p>
       <div className="matrix-container">
         <div className="matrix-grid" style={{ gridTemplateColumns: `auto repeat(${labels.length}, 1fr)` }}>
           <div className="matrix-corner"></div>
@@ -35,11 +40,8 @@ function ConfusionMatrix({ model = 'classification' }) {
             <div key={i} className="matrix-row">
               <div className="matrix-label">{rowLabel}</div>
               {matrix[i].map((value, j) => (
-                <div
-                  key={j}
-                  className={`matrix-cell ${i === j ? 'diagonal' : ''}`}
-                >
-                  {value}
+                <div key={j} className={`matrix-cell ${i === j ? 'diagonal' : ''}`}>
+                  {value.toFixed(1)}
                 </div>
               ))}
             </div>
@@ -47,25 +49,13 @@ function ConfusionMatrix({ model = 'classification' }) {
         </div>
       </div>
       <div className="matrix-observations">
-        <p className="obs-title">Observations:</p>
-        {isRoad ? (
-          <ul>
-            <li>Non-Road background correctly classified 91% of the time.</li>
-            <li>Road recall is 78% — some thin roads missed at 256×256 resolution.</li>
-            <li>False positives (9%) mainly from road-like linear features (canals, field edges).</li>
-          </ul>
-        ) : (
-          <ul>
-            <li>Water class achieved highest accuracy (94%) — spectrally distinct NIR/SWIR signature.</li>
-            <li>Urban/Rural confusion is the primary challenge — mixed peri-urban zones.</li>
-            <li>Background class well-separated from built-up terrain.</li>
-          </ul>
-        )}
-        <p className="obs-conclusion">
-          {isRoad
-            ? 'Morphological skeleton post-processing reduces false positives and thins road predictions.'
-            : 'Epoch 11 checkpoint selected as best — lowest background leakage (4.4%) and highest urban score (42.5%).'}
-        </p>
+        <p className="obs-title">Evaluation details:</p>
+        <ul>
+          <li>Checkpoint: {result.checkpoint}</li>
+          <li>Validation tiles: {result.num_tiles.toLocaleString()}</li>
+          <li>Pixel accuracy: {result.pixel_accuracy}% · Mean IoU: {result.mean_iou}%</li>
+          <li>Evaluated on: {result.evaluated_on}</li>
+        </ul>
       </div>
     </Card>
   );
